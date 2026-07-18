@@ -1,0 +1,97 @@
+name,category,subCategory,sp,mrp,weight,badge,stock
+Taj Super Basmati Rice,rice,Super Basmati,1250,1400,5 kg,Best Seller,true
+Taj Super Basmati Rice,rice,Super Basmati,2450,2700,10 kg,,true
+Taj Super Basmati Rice,rice,Super Basmati,5900,6500,25 kg,Value Pack,true
+Taj Sella Basmati Rice,rice,Sella Basmati,1100,1250,5 kg,,true
+Taj Sella Basmati Rice,rice,Sella Basmati,2100,2400,10 kg,,true
+Taj Kainat Rice,rice,Kainat,950,1100,5 kg,,true
+Taj Kainat Rice,rice,Kainat,1850,2100,10 kg,,true
+Taj Parboiled Rice,rice,Parboiled,850,1000,5 kg,New,true
+Taj Broken Rice,rice,Broken Rice,480,600,5 kg,,true
+Moong Dal Split,commodities,Pulses,320,380,1 kg,,true
+Masoor Dal Red Lentil,commodities,Pulses,280,340,1 kg,,true
+Chana Dal,commodities,Pulses,260,320,1 kg,,true
+Urad Dal,commodities,Pulses,350,420,1 kg,,true
+Wheat Flour Atta,commodities,Flour,520,600,5 kg,Popular,true
+Maida All Purpose Flour,commodities,Flour,140,180,1 kg,,true
+Besan Gram Flour,commodities,Flour,200,250,1 kg,,true
+Red Kidney Beans,commodities,Beans,280,340,1 kg,,true
+White Chickpeas Kabuli,commodities,Beans,240,300,1 kg,Popular,true
+Black Eye Beans,commodities,Beans,220,280,1 kg,,true
+Mung Beans Whole,commodities,Beans,300,360,1 kg,,true
+Corn Flour,commodities,Grains,120,160,500 g,,true
+Canola Cooking Oil,oil-ghee,Cooking Oil,380,440,1 ltr,,true
+Canola Cooking Oil,oil-ghee,Cooking Oil,1750,1950,5 ltr,Value Pack,true
+Sunflower Oil,oil-ghee,Cooking Oil,420,480,1 ltr,,true
+Sunflower Oil,oil-ghee,Cooking Oil,1950,2200,5 ltr,,true
+Corn Oil,oil-ghee,Cooking Oil,460,520,1 ltr,,true
+Vegetable Ghee Banaspati,oil-ghee,Vegetable Ghee,520,600,1 kg,,true
+Vegetable Ghee Banaspati,oil-ghee,Vegetable Ghee,1250,1450,2.5 kg,,true
+Pure Desi Ghee,oil-ghee,Desi Ghee,680,780,500 g,Premium,true
+Pure Desi Ghee,oil-ghee,Desi Ghee,1300,1500,1 kg,,true
+Extra Virgin Olive Oil,oil-ghee,Olive Oil,950,1100,500 ml,,true
+Olive Oil Pomace,oil-ghee,Olive Oil,750,880,1 ltr,,true
+Biryani Masala Mix,masala,Recipe Mixes,85,100,50 g,Top Pick,true
+Karahi Masala Mix,masala,Recipe Mixes,80,95,50 g,,true
+Nihari Masala Mix,masala,Recipe Mixes,85,100,50 g,,true
+Chicken Tikka Masala,masala,Recipe Mixes,75,90,50 g,,true
+Haleem Masala Mix,masala,Recipe Mixes,120,140,100 g,,true
+Qorma Masala,masala,Recipe Mixes,80,95,50 g,,true
+Garam Masala Whole,masala,Garam Masala,180,220,100 g,,true
+Garam Masala Powder,masala,Garam Masala,150,185,100 g,,true
+Red Chilli Powder,masala,Single Spices,120,150,200 g,,true
+Turmeric Powder,masala,Single Spices,100,130,200 g,,true
+Coriander Powder,masala,Single Spices,110,140,200 g,,true
+Himalayan Pink Salt,masala,Salt & Pepper,160,200,800 g,,true
+Tapal Danedar Tea,tea-coffee,Black Tea,480,560,450 g,Popular,true
+Lipton Yellow Label,tea-coffee,Black Tea,380,450,200 g,,true
+Supreme Tea,tea-coffee,Black Tea,820,950,800 g,,true
+Brooke Bond Tea,tea-coffee,Black Tea,350,420,190 g,,true
+Green Tea Jasmine,tea-coffee,Green Tea,280,340,100 g,,true
+Mint Green Tea,tea-coffee,Green Tea,260,320,100 g,,true
+Nescafe Classic,tea-coffee,Coffee,720,840,200 g,,true
+Davidoff Rich Aroma,tea-coffee,Coffee,880,1020,100 g,Premium,true
+3 in 1 Milk Tea,tea-coffee,Milk Tea Mixes,320,380,Box of 10,,true
+Nescafe 3 in 1,tea-coffee,Coffee,480,560,Box of 20,,true
+Olpers Full Cream Milk,dairy,Milk,185,220,1 ltr,,true
+Nestle Milkpak UHT,dairy,Milk,188,225,1 ltr,,true
+Good Milk Skimmed,dairy,Milk,170,205,1 ltr,,true
+Olpers Butter Salted,dairy,Butter,320,380,200 g,Fresh,true
+Blue Band Margarine,dairy,Butter,280,340,250 g,,true
+Activia Plain Yogurt,dairy,Yogurt,180,220,400 g,,true
+Nestle Plain Yogurt,dairy,Yogurt,110,140,200 g,,true
+Olpers Whipping Cream,dairy,Cream,195,240,200 ml,,true
+Cheddar Cheese Slices,dairy,Cheese,380,450,200 g,,true
+Cream Cheese,dairy,Cheese,420,500,200 g,,true
+Lux Soap Bar,soaps,Bath Soaps,95,120,120 g,,true
+Dettol Antibacterial Soap,soaps,Bath Soaps,120,150,115 g,Antibacterial,true
+Safeguard Family Soap,soaps,Bath Soaps,145,180,175 g,,true
+Lifebuoy Soap,soaps,Bath Soaps,90,115,120 g,,true
+Head and Shoulders Shampoo,soaps,Shampoo,580,680,360 ml,,true
+Pantene Pro V Shampoo,soaps,Shampoo,560,660,360 ml,,true
+Sunsilk Shampoo,soaps,Shampoo,420,500,350 ml,,true
+Pantene Conditioner,soaps,Conditioner,380,460,200 ml,,true
+Dettol Hand Wash,soaps,Hand Wash,240,290,250 ml,,true
+Dove Body Wash,soaps,Body Wash,650,780,500 ml,,true
+Surf Excel Washing Powder,detergent,Washing Powder,480,560,1 kg,Popular,true
+Ariel Washing Powder,detergent,Washing Powder,520,620,1 kg,,true
+Bonus Washing Powder,detergent,Washing Powder,480,560,1.8 kg,,true
+Brite Washing Powder,detergent,Washing Powder,380,450,1 kg,,true
+Surf Excel Liquid,detergent,Liquid Detergent,380,460,500 ml,,true
+Comfort Fabric Softener,detergent,Fabric Softener,320,390,500 ml,,true
+Softlan Fabric Conditioner,detergent,Fabric Softener,450,540,900 ml,,true
+Fairy Dishwashing Liquid,detergent,Dishwash,560,660,800 ml,,true
+Vim Dishwash Bar,detergent,Dishwash,120,155,200 g,,true
+Dettol Floor Cleaner,detergent,Surface Cleaners,380,450,1 ltr,,true
+Colin Glass Cleaner,detergent,Surface Cleaners,280,340,500 ml,,true
+Ponds Face Cream,health,Skin Care,320,390,75 g,,true
+Fair and Lovely Face Cream,health,Skin Care,180,225,50 g,,true
+Nivea Body Lotion,health,Skin Care,480,580,250 ml,,true
+Multivitamin Tablets,health,Vitamins,380,460,30 tabs,Health,true
+Vitamin C 1000mg,health,Vitamins,280,340,20 tabs,,true
+Colgate Total Toothpaste,health,Oral Care,220,270,150 g,,true
+Sensodyne Toothpaste,health,Oral Care,320,390,100 g,,true
+Colgate Toothbrush,health,Oral Care,120,155,Medium,,true
+Garnier Fructis Serum,health,Hair Care,420,510,150 ml,,true
+Always Sanitary Pads,health,Feminine Care,220,270,Pack of 8,,true
+Stayfree Pads Ultra,health,Feminine Care,200,250,Pack of 8,,true

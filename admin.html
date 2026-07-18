@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Taj Rice — Admin Panel</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C8860A; --gold-l:#FFF3D6; --gold-d:#8B5E04;
+  --dark:#111; --gray1:#F7F6F3; --gray2:#EEECE7; --gray3:#D6D2C8; --gray4:#9A9485;
+  --white:#FFF; --red:#B91C1C; --green:#166534; --r:8px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:'Inter',sans-serif;background:#F0EDE8;color:var(--dark);min-height:100vh}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap');
+
+/* LOGIN */
+#login-screen{
+  position:fixed;inset:0;background:linear-gradient(135deg,#1A0E00,#3D2800);
+  display:flex;align-items:center;justify-content:center;z-index:1000;
+}
+.login-box{
+  background:white;border-radius:16px;padding:48px 40px;
+  width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,.3);
+}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo img{height:60px;margin:0 auto 12px;}
+.login-logo h1{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--dark);}
+.login-logo p{font-size:.76rem;color:var(--gray4);}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:.72rem;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.login-field input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--gray3);border-radius:7px;
+  font-size:.88rem;outline:none;transition:border-color .15s;
+}
+.login-field input:focus{border-color:var(--gold);}
+.login-btn{
+  width:100%;padding:13px;background:var(--gold);color:white;
+  border:none;border-radius:7px;font-size:.9rem;font-weight:800;
+  cursor:pointer;transition:background .15s;margin-top:8px;
+}
+.login-btn:hover{background:var(--gold-d);}
+.login-err{color:var(--red);font-size:.78rem;text-align:center;margin-top:10px;display:none;}
+
+/* LAYOUT */
+#admin-app{display:none;}
+.admin-wrap{display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{
+  width:240px;flex-shrink:0;background:var(--dark);
+  position:fixed;top:0;left:0;bottom:0;
+  display:flex;flex-direction:column;z-index:100;
+}
+.sb-brand{
+  padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:12px;
+}
+.sb-brand img{height:36px;}
+.sb-brand span{font-size:.72rem;color:rgba(255,255,255,.4);display:block;margin-top:2px;}
+.sb-nav{flex:1;padding:12px 0;}
+.sb-item{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 20px;cursor:pointer;
+  font-size:.82rem;font-weight:600;color:rgba(255,255,255,.6);
+  transition:all .15s;border-left:3px solid transparent;
+}
+.sb-item:hover{color:white;background:rgba(255,255,255,.06);}
+.sb-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(200,134,10,.1);}
+.sb-icon{font-size:1rem;width:20px;text-align:center;}
+.sb-footer{
+  padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);
+  font-size:.74rem;color:rgba(255,255,255,.3);
+}
+.logout-btn{
+  width:100%;padding:9px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);border-radius:6px;
+  color:rgba(255,255,255,.5);font-size:.76rem;cursor:pointer;
+  transition:all .15s;margin-top:8px;
+}
+.logout-btn:hover{background:rgba(185,28,28,.2);color:#FCA5A5;border-color:rgba(185,28,28,.3);}
+
+/* MAIN */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+.topbar{
+  background:white;border-bottom:1px solid var(--gray2);
+  padding:0 32px;height:60px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:50;
+  box-shadow:var(--shadow);
+}
+.topbar h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--dark);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.admin-badge{
+  background:var(--gold-l);color:var(--gold-d);
+  padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;
+}
+
+.content{padding:28px 32px;flex:1;}
+
+/* STATS CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{
+  background:white;border-radius:var(--r);padding:20px;
+  border:1px solid var(--gray2);box-shadow:var(--shadow);
+}
+.stat-card .s-val{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--dark);margin-bottom:4px;}
+.stat-card .s-lbl{font-size:.74rem;color:var(--gray4);font-weight:600;}
+.stat-card .s-icon{font-size:1.5rem;margin-bottom:8px;}
+
+/* SECTION CARD */
+.sec-card{
+  background:white;border-radius:var(--r);
+  border:1px solid var(--gray2);box-shadow:var(--shadow);
+  overflow:hidden;margin-bottom:24px;
+}
+.sec-card-hdr{
+  padding:16px 20px;border-bottom:1px solid var(--gray2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-card-hdr h3{font-size:.9rem;font-weight:800;color:var(--dark);}
+.sec-card-body{padding:20px;}
+
+/* BUTTONS */
+.btn{
+  padding:9px 18px;border-radius:6px;border:none;
+  font-size:.78rem;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:all .15s;
+}
+.btn-gold{background:var(--gold);color:white;}
+.btn-gold:hover{background:var(--gold-d);}
+.btn-dark{background:var(--dark);color:white;}
+.btn-dark:hover{background:#333;}
+.btn-red{background:var(--red);color:white;}
+.btn-red:hover{background:#991B1B;}
+.btn-outline{background:white;color:var(--dark);border:1.5px solid var(--gray3);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold-d);}
+.btn-green{background:#16A34A;color:white;}
+.btn-green:hover{background:#15803D;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field.full{grid-column:1/-1;}
+.form-field label{font-size:.68rem;font-weight:800;color:var(--gray4);text-transform:uppercase;letter-spacing:.08em;}
+.form-field input,.form-field select,.form-field textarea{
+  padding:9px 12px;border:1.5px solid var(--gray3);border-radius:6px;
+  font-size:.84rem;outline:none;transition:border-color .15s;font-family:'Inter',sans-serif;
+}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--gold);}
+.form-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray2);}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.8rem;}
+thead th{
+  padding:10px 14px;text-align:left;
+  font-size:.65rem;font-weight:800;color:var(--gray4);
+  text-transform:uppercase;letter-spacing:.08em;
+  background:var(--gray1);border-bottom:1px solid var(--gray2);
+}
+tbody tr{border-bottom:1px solid var(--gray2);transition:background .1s;}
+tbody tr:hover{background:var(--gray1);}
+tbody td{padding:10px 14px;vertical-align:middle;}
+.prod-img-cell{
+  width:44px;height:44px;background:var(--gray1);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  border:1px solid var(--gray2);overflow:hidden;
+}
+.prod-img-cell img{width:100%;height:100%;object-fit:contain;}
+.badge{padding:2px 8px;border-radius:4px;font-size:.62rem;font-weight:800;text-transform:uppercase;}
+.badge-green{background:#DCFCE7;color:#166534;}
+.badge-red{background:#FEE2E2;color:#991B1B;}
+.tbl-actions{display:flex;gap:6px;}
+.tbl-btn{
+  padding:5px 10px;border-radius:5px;border:1px solid var(--gray3);
+  font-size:.7rem;font-weight:700;cursor:pointer;background:white;
+  transition:all .12s;
+}
+.tbl-btn:hover{border-color:var(--gold);color:var(--gold-d);}
+.tbl-btn.del:hover{border-color:var(--red);color:var(--red);}
+
+/* SEARCH BAR */
+.tbl-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.tbl-search{
+  flex:1;min-width:200px;padding:8px 14px;
+  border:1.5px solid var(--gray3);border-radius:6px;font-size:.82rem;outline:none;
+}
+.tbl-search:focus{border-color:var(--gold);}
+.tbl-filter select{
+  padding:8px 12px;border:1.5px solid var(--gray3);border-radius:6px;
+  font-size:.8rem;outline:none;background:white;cursor:pointer;
+}
+.tbl-filter select:focus{border-color:var(--gold);}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center;}
+.pg-btn{
+  padding:6px 12px;border:1px solid var(--gray3);border-radius:5px;
+  font-size:.75rem;font-weight:600;cursor:pointer;background:white;transition:all .12s;
+}
+.pg-btn:hover,.pg-btn.active{background:var(--gold);color:white;border-color:var(--gold);}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed;}
+.pg-info{font-size:.74rem;color:var(--gray4);}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--gray2);margin-bottom:20px;}
+.tab{
+  padding:10px 20px;font-size:.8rem;font-weight:700;
+  cursor:pointer;color:var(--gray4);border-bottom:2px solid transparent;
+  margin-bottom:-2px;transition:all .15s;
+}
+.tab.active{color:var(--gold-d);border-bottom-color:var(--gold);}
+
+/* IMPORT AREA */
+.import-area{
+  border:2px dashed var(--gray3);border-radius:10px;
+  padding:40px;text-align:center;cursor:pointer;transition:all .15s;
+}
+.import-area:hover{border-color:var(--gold);background:var(--gold-l);}
+.import-area input{display:none;}
+.import-icon{font-size:2.5rem;margin-bottom:12px;}
+.import-area h4{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:6px;}
+.import-area p{font-size:.76rem;color:var(--gray4);}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(3px);
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:white;border-radius:14px;width:100%;max-width:600px;
+  max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.2);
+}
+.modal-hdr{
+  padding:20px 24px;border-bottom:1px solid var(--gray2);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:white;z-index:1;
+}
+.modal-hdr h3{font-size:1rem;font-weight:800;color:var(--dark);}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray4);}
+.modal-body{padding:24px;}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--dark);color:white;padding:12px 18px;
+  border-radius:8px;font-size:.8rem;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+  transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;
+}
+#toast.show{transform:none;opacity:1;}
+#toast.success .t-icon::before{content:'✓';color:#4ADE80;}
+#toast.error   .t-icon::before{content:'✕';color:#F87171;}
+#toast.info    .t-icon::before{content:'ℹ';color:#60A5FA;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--gray4);}
+.spinner{
+  width:32px;height:32px;border:3px solid var(--gray2);
+  border-top-color:var(--gold);border-radius:50%;
+  animation:spin .7s linear infinite;margin:0 auto 12px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* IMPORT PREVIEW */
+.import-preview{margin-top:16px;}
+.import-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;
+}
+.import-stat{
+  background:var(--gray1);border-radius:8px;padding:14px;text-align:center;
+}
+.import-stat .is-val{font-size:1.4rem;font-weight:800;color:var(--dark);}
+.import-stat .is-lbl{font-size:.7rem;color:var(--gray4);}
+.preview-table{max-height:300px;overflow-y:auto;border:1px solid var(--gray2);border-radius:8px;}
+
+/* IMG UPLOAD */
+.img-upload-wrap{
+  border:2px dashed var(--gray3);border-radius:8px;
+  padding:20px;text-align:center;cursor:pointer;transition:all .15s;position:relative;
+}
+.img-upload-wrap:hover{border-color:var(--gold);}
+.img-upload-wrap input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.img-preview{
+  width:80px;height:80px;object-fit:contain;border-radius:6px;
+  border:1px solid var(--gray2);margin:0 auto 8px;display:block;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{width:60px;}
+  .sb-item span,.sb-brand span,.sb-brand h2,.sb-footer,.admin-badge{display:none;}
+  .main{margin-left:60px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="logo-intro.png" alt="Taj Rice"/>
+      <h1>Admin Panel</h1>
+      <p>Sign in to manage Taj Rice</p>
+    </div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="admin@tajrice.com" value="m.ismail@tajrice.com"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <button class="login-btn" onclick="doRegister()" style="background:var(--dark);margin-top:8px">Create Admin Account</button>
+    <div class="login-err" id="login-err"></div>
+    <div id="login-success" style="color:#166534;font-size:.78rem;text-align:center;margin-top:10px;display:none"></div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="admin-app">
+  <div class="admin-wrap">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-brand">
+        <img src="logo-intro.png" alt="Taj Rice"/>
+        <div><div style="color:white;font-weight:700;font-size:.82rem">Taj Rice</div><span>Admin Panel</span></div>
+      </div>
+      <nav class="sb-nav">
+        <div class="sb-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+          <span class="sb-icon">📊</span><span>Dashboard</span>
+        </div>
+        <div class="sb-item" onclick="showPage('products')" id="nav-products">
+          <span class="sb-icon">📦</span><span>Products</span>
+        </div>
+        <div class="sb-item" onclick="showPage('add-product')" id="nav-add-product">
+          <span class="sb-icon">➕</span><span>Add Product</span>
+        </div>
+        <div class="sb-item" onclick="showPage('import')" id="nav-import">
+          <span class="sb-icon">📥</span><span>Bulk Import</span>
+        </div>
+        <div class="sb-item" onclick="showPage('categories')" id="nav-categories">
+          <span class="sb-icon">🗂️</span><span>Categories</span>
+        </div>
+      </nav>
+      <div class="sb-footer">
+        <div id="admin-email-display" style="margin-bottom:6px"></div>
+        <button class="logout-btn" onclick="doLogout()">🚪 Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <h2 id="page-title">Dashboard</h2>
+        <div class="topbar-right">
+          <span class="admin-badge">🔐 Admin</span>
+          <a href="index.html" target="_blank" class="btn btn-outline">🌐 View Website</a>
+        </div>
+      </div>
+      <div class="content" id="page-content">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD/EDIT PRODUCT MODAL -->
+<div class="modal-overlay" id="prod-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="modal-title">Add Product</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id"/>
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>SKU Name *</label>
+          <input type="text" id="f-name" placeholder="e.g. Taj Super Basmati Rice 5kg"/>
+        </div>
+        <div class="form-field">
+          <label>Category *</label>
+          <select id="f-cat" onchange="updateSubCats()">
+            <option value="">Select Category</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Sub Category *</label>
+          <select id="f-subcat">
+            <option value="">Select Sub Category</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Selling Price (SP) *</label>
+          <input type="number" id="f-sp" placeholder="e.g. 1250"/>
+        </div>
+        <div class="form-field">
+          <label>MRP</label>
+          <input type="number" id="f-mrp" placeholder="e.g. 1400"/>
+        </div>
+        <div class="form-field">
+          <label>Weight / Unit</label>
+          <input type="text" id="f-weight" placeholder="e.g. 5 kg, 500 ml"/>
+        </div>
+        <div class="form-field">
+          <label>Badge (optional)</label>
+          <select id="f-badge">
+            <option value="">None</option>
+            <option value="Best Seller">Best Seller</option>
+            <option value="New">New</option>
+            <option value="Sale">Sale</option>
+            <option value="Popular">Popular</option>
+            <option value="Value Pack">Value Pack</option>
+            <option value="Premium">Premium</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Stock Status</label>
+          <select id="f-stock">
+            <option value="true">In Stock</option>
+            <option value="false">Out of Stock</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <label>Product Image</label>
+          <div class="img-upload-wrap" onclick="document.getElementById('f-img-input').click()">
+            <input type="file" id="f-img-input" accept="image/*" onchange="previewImg(this)"/>
+            <img id="f-img-preview" class="img-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23F5F5F5'/%3E%3Ctext x='40' y='44' text-anchor='middle' font-size='28' fill='%23CCC'%3E📷%3C/text%3E%3C/svg%3E" style="display:block"/>
+            <div style="font-size:.74rem;color:var(--gray4)">Click to upload image (JPG/PNG)</div>
+            <div style="font-size:.68rem;color:var(--gray3);margin-top:4px">Leave empty to use category placeholder</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gold" onclick="saveProduct()">💾 Save Product</button>
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <div id="save-status" style="font-size:.76rem;color:var(--gray4);margin-left:auto;align-self:center;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT CATEGORY MODAL -->
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="cat-modal-title">Add Category</h3>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Category ID (slug)</label>
+          <input type="text" id="c-id" placeholder="auto-generated from label, e.g. frozen-foods"/>
+        </div>
+        <div class="form-field">
+          <label>Icon (emoji) *</label>
+          <input type="text" id="c-icon" placeholder="e.g. 🧊" maxlength="4"/>
+        </div>
+        <div class="form-field full">
+          <label>Category Label *</label>
+          <input type="text" id="c-label" placeholder="e.g. Frozen Foods"/>
+        </div>
+        <div class="form-field">
+          <label>Banner Color (start)</label>
+          <input type="color" id="c-color1" value="#333333" style="height:38px;cursor:pointer"/>
+        </div>
+        <div class="form-field">
+          <label>Banner Color (end)</label>
+          <input type="color" id="c-color2" value="#666666" style="height:38px;cursor:pointer"/>
+        </div>
+        <div class="form-field">
+          <label>Display Order</label>
+          <input type="number" id="c-order" placeholder="0"/>
+        </div>
+        <div class="form-field full">
+          <label>Category Tile Image (optional — real photo instead of emoji)</label>
+          <div class="img-upload-wrap" onclick="document.getElementById('c-img-input').click()">
+            <input type="file" id="c-img-input" accept="image/*" onchange="cPreviewImg(this)"/>
+            <img id="c-img-preview" class="img-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23F5F5F5'/%3E%3Ctext x='40' y='44' text-anchor='middle' font-size='28' fill='%23CCC'%3E📷%3C/text%3E%3C/svg%3E"/>
+            <div style="font-size:.74rem;color:var(--gray4)">Click to upload category image</div>
+            <div style="font-size:.68rem;color:var(--gray3);margin-top:4px">Leave empty to use the emoji icon instead</div>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Sub Categories</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="c-sub-input" placeholder="Type a sub-category and press Add" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addSubChip();}"/>
+            <button class="btn btn-outline" onclick="addSubChip()" type="button">+ Add</button>
+          </div>
+          <div id="c-sub-chips" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gold" onclick="saveCategory()">💾 Save Category</button>
+        <button class="btn btn-outline" onclick="closeCatModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"><span class="t-icon"></span><span id="toast-msg"></span></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
+  getDocs, getDoc, query, orderBy, limit, startAfter, where, getCountFromServer }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBmU634qA1XMPUJfZuHAZa8EpgcrQ_tDYU",
+  authDomain: "taj-rice.firebaseapp.com",
+  projectId: "taj-rice",
+  storageBucket: "taj-rice.firebasestorage.app",
+  messagingSenderId: "603231287383",
+  appId: "1:603231287383:web:541beab2cde0676d584b12"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const storage = getStorage(app);
+
+/* ── Sub-categories map (default fallback — overwritten by loadAdminCategories) ── */
+let SUB_CATS = {
+  rice:        ['Super Basmati','Sella Basmati','Kainat','Parboiled','Broken Rice'],
+  commodities: ['Pulses','Flour','Beans','Grains'],
+  'oil-ghee':  ['Cooking Oil','Vegetable Ghee','Desi Ghee','Olive Oil'],
+  masala:      ['Recipe Mixes','Garam Masala','Single Spices','Salt & Pepper'],
+  'tea-coffee':['Black Tea','Green Tea','Coffee','Milk Tea Mixes'],
+  dairy:       ['Milk','Butter','Yogurt','Cream','Cheese'],
+  soaps:       ['Bath Soaps','Shampoo','Conditioner','Hand Wash','Body Wash'],
+  detergent:   ['Washing Powder','Liquid Detergent','Fabric Softener','Dishwash','Surface Cleaners'],
+  health:      ['Skin Care','Hair Care','Oral Care','Vitamins','Feminine Care'],
+};
+let CAT_ICONS  = {rice:'🌾',commodities:'🌽','oil-ghee':'🫙',masala:'🌶️','tea-coffee':'☕',dairy:'🥛',soaps:'🧴',detergent:'🧺',health:'💄'};
+let CAT_LABELS = {rice:'Rice',commodities:'Commodities','oil-ghee':'Oil & Ghee',masala:'Masala','tea-coffee':'Tea & Coffee',dairy:'Dairy',soaps:'Soaps & Shampoo',detergent:'Detergent & Laundry',health:'Health & Beauty'};
+let CAT_COLORS = {rice:'#4A3000,#8B6914',commodities:'#1A3320,#2E7D32','oil-ghee':'#0A1A30,#1565C0',masala:'#3D0A0A,#B71C1C','tea-coffee':'#2A1505,#5D4037',dairy:'#0A2030,#01579B',soaps:'#1A0A2E,#4527A0',detergent:'#0A2E18,#1B5E20',health:'#2E0A18,#880E4F'};
+let ADMIN_CATS = []; // live array of {id,label,icon,color,subCategories,order}
+
+/* ── Load categories from Firestore; seed defaults if empty ── */
+async function loadAdminCategories() {
+  try {
+    const snap = await getDocs(query(collection(db,'categories'), orderBy('order')));
+    if (snap.empty) {
+      ADMIN_CATS = Object.keys(CAT_LABELS).map((id, i) => ({
+        id, label: CAT_LABELS[id], icon: CAT_ICONS[id],
+        color: CAT_COLORS[id]||'#333333,#666666',
+        subCategories: SUB_CATS[id]||[], order: i
+      }));
+    } else {
+      ADMIN_CATS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      // Rebuild lookup maps from live data
+      SUB_CATS={}; CAT_ICONS={}; CAT_LABELS={}; CAT_COLORS={};
+      ADMIN_CATS.forEach(c => {
+        SUB_CATS[c.id]  = c.subCategories||[];
+        CAT_ICONS[c.id] = c.icon||'📦';
+        CAT_LABELS[c.id]= c.label||c.id;
+        CAT_COLORS[c.id]= c.color||'#333333,#666666';
+      });
+    }
+  } catch(e) { console.warn('Could not load categories:', e.message); }
+  populateCategoryDropdowns();
+}
+
+/* ── Write the 9 default categories into Firestore (one-time migration) ── */
+window.seedDefaultCategories = async function() {
+  if (!confirm('This will create the 9 default categories in Firebase. Continue?')) return;
+  const defaults = Object.keys(CAT_LABELS_DEFAULT).map((id,i)=>({
+    id, label:CAT_LABELS_DEFAULT[id], icon:CAT_ICONS_DEFAULT[id],
+    color:CAT_COLORS_DEFAULT[id], subCategories:SUB_CATS_DEFAULT[id]||[], order:i
+  }));
+  for (const c of defaults) {
+    await setDoc(doc(db,'categories',c.id), {
+      label:c.label, icon:c.icon, color:c.color, subCategories:c.subCategories, order:c.order
+    });
+  }
+  showToast('Default categories created ✓','success');
+  await loadAdminCategories();
+  renderCategories();
+};
+// Keep untouched originals for seeding, since SUB_CATS/CAT_ICONS/CAT_LABELS/CAT_COLORS get overwritten once live data loads
+const SUB_CATS_DEFAULT   = {...SUB_CATS};
+const CAT_ICONS_DEFAULT  = {...CAT_ICONS};
+const CAT_LABELS_DEFAULT = {...CAT_LABELS};
+const CAT_COLORS_DEFAULT = {...CAT_COLORS};
+
+/* ── Populate the category <select> dropdowns wherever they exist ── */
+function populateCategoryDropdowns() {
+  const opts = '<option value="">Select Category</option>' +
+    ADMIN_CATS.map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
+  const fCat  = document.getElementById('f-cat');
+  const apCat = document.getElementById('ap-cat');
+  if (fCat)  { const cur=fCat.value;  fCat.innerHTML=opts;  fCat.value=cur; }
+  if (apCat) { const cur=apCat.value; apCat.innerHTML=opts; apCat.value=cur; }
+}
+
+
+
+/* expose globals */
+let currentUser = null;
+let allProducts = [];
+let filteredProducts = [];
+let currentPage = 0;
+const PAGE_SIZE = 25;
+let editingId = null;
+let uploadedImageUrl = null;
+
+window.updateSubCats = function() {
+  const cat = document.getElementById('f-cat').value;
+  const sel = document.getElementById('f-subcat');
+  sel.innerHTML = '<option value="">Select Sub Category</option>';
+  (SUB_CATS[cat]||[]).forEach(s => {
+    sel.innerHTML += `<option value="${s}">${s}</option>`;
+  });
+};
+
+window.doLogin = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    errEl.style.display = 'block';
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+      errEl.textContent = 'Account not found. Click "Create Admin Account" button below to register first.';
+    } else if (e.code === 'auth/wrong-password') {
+      errEl.textContent = 'Wrong password. Please try again.';
+    } else {
+      errEl.textContent = 'Error: ' + e.message;
+    }
+  }
+};
+
+window.doRegister = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  const sucEl = document.getElementById('login-success');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  if (!email || !pass) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Please enter email and password first.';
+    return;
+  }
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+    sucEl.style.display = 'block';
+    sucEl.textContent = '✅ Admin account created! Logging in...';
+  } catch(e) {
+    errEl.style.display = 'block';
+    if (e.code === 'auth/email-already-in-use') {
+      errEl.textContent = 'Account already exists. Just click Sign In.';
+    } else {
+      errEl.textContent = 'Error: ' + e.message;
+    }
+  }
+};
+
+window.doLogout = async function() {
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+    document.getElementById('admin-email-display').textContent = user.email;
+    await loadAdminCategories();
+    showPage('dashboard');
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('admin-app').style.display = 'none';
+  }
+});
+
+/* ── NAVIGATION ── */
+window.showPage = function(page) {
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const nav = document.getElementById('nav-'+page);
+  if (nav) nav.classList.add('active');
+  const titles = {dashboard:'Dashboard',products:'Products',
+    'add-product':'Add Product',import:'Bulk Import',categories:'Categories'};
+  document.getElementById('page-title').textContent = titles[page]||page;
+
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+
+  if (page==='dashboard')   renderDashboard();
+  if (page==='products')    renderProducts();
+  if (page==='add-product') renderAddProduct();
+  if (page==='import')      renderImport();
+  if (page==='categories')  renderCategories();
+};
+
+/* ── TOAST ── */
+window.showToast = function(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.className = type;
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3000);
+};
+
+/* ══════════════════════════════════
+   DASHBOARD
+   ══════════════════════════════════ */
+async function renderDashboard() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading stats...</p></div>';
+  try {
+    const snap = await getDocs(collection(db,'products'));
+    const total = snap.size;
+    const cats  = {};
+    let inStock = 0;
+    snap.forEach(d => {
+      const p = d.data();
+      cats[p.category] = (cats[p.category]||0)+1;
+      if(p.inStock!==false) inStock++;
+    });
+    const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+
+    c.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-card"><div class="s-icon">📦</div><div class="s-val">${total.toLocaleString()}</div><div class="s-lbl">Total Products</div></div>
+        <div class="stat-card"><div class="s-icon">✅</div><div class="s-val">${inStock.toLocaleString()}</div><div class="s-lbl">In Stock</div></div>
+        <div class="stat-card"><div class="s-icon">❌</div><div class="s-val">${(total-inStock).toLocaleString()}</div><div class="s-lbl">Out of Stock</div></div>
+        <div class="stat-card"><div class="s-icon">🗂️</div><div class="s-val">${Object.keys(cats).length}</div><div class="s-lbl">Categories</div></div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-hdr"><h3>📊 Products by Category</h3></div>
+        <div class="sec-card-body">
+          <table><thead><tr><th>Category</th><th>Products</th><th>%</th><th></th></tr></thead><tbody>
+          ${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,cnt])=>`
+            <tr>
+              <td><b>${CAT_ICONS[cat]||'📦'} ${CAT_LABELS[cat]||cat}</b></td>
+              <td>${cnt}</td>
+              <td>${total?Math.round(cnt/total*100):0}%</td>
+              <td><button class="tbl-btn" onclick="showPage('products');filterByCat('${cat}')">View →</button></td>
+            </tr>`).join('')}
+          </tbody></table>
+        </div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-hdr"><h3>⚡ Quick Actions</h3></div>
+        <div class="sec-card-body" style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="showPage('add-product')">➕ Add New Product</button>
+          <button class="btn btn-dark" onclick="showPage('import')">📥 Bulk Import CSV</button>
+          <button class="btn btn-outline" onclick="showPage('products')">📦 Manage Products</button>
+          <a href="index.html" target="_blank" class="btn btn-outline">🌐 View Website</a>
+        </div>
+      </div>`;
+  } catch(e) {
+    c.innerHTML = `<div class="loading">Error loading dashboard: ${e.message}</div>`;
+  }
+}
+
+/* ══════════════════════════════════
+   PRODUCTS LIST
+   ══════════════════════════════════ */
+let activeCatFilter = '';
+window.filterByCat = function(cat) { activeCatFilter = cat; renderProducts(); };
+
+async function renderProducts() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading products...</p></div>';
+  try {
+    const snap = await getDocs(query(collection(db,'products'), orderBy('name')));
+    allProducts = snap.docs.map(d => ({id:d.id,...d.data()}));
+    filteredProducts = allProducts;
+    currentPage = 0;
+    renderProductsTable(activeCatFilter);
+    activeCatFilter = '';
+  } catch(e) {
+    c.innerHTML = `<div class="loading">Error: ${e.message}</div>`;
+  }
+}
+
+function renderProductsTable(catFilter='') {
+  const c = document.getElementById('page-content');
+  if(catFilter) filteredProducts = allProducts.filter(p=>p.category===catFilter);
+  else filteredProducts = [...allProducts];
+
+  const totalPages = Math.ceil(filteredProducts.length/PAGE_SIZE);
+  const pageProds  = filteredProducts.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
+
+  c.innerHTML = `
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <h3>All Products (${filteredProducts.length})</h3>
+        <button class="btn btn-gold" onclick="openAddModal()">➕ Add Product</button>
+      </div>
+      <div class="sec-card-body">
+        <div class="tbl-toolbar">
+          <input class="tbl-search" placeholder="Search by name..." oninput="searchProducts(this.value)" id="prod-search"/>
+          <div class="tbl-filter">
+            <select onchange="filterProducts(this.value)" id="cat-filter">
+              <option value="">All Categories</option>
+              ${Object.entries(CAT_LABELS).map(([k,v])=>`<option value="${k}" ${catFilter===k?'selected':''}>${CAT_ICONS[k]} ${v}</option>`).join('')}
+            </select>
+          </div>
+          <button class="btn btn-outline" onclick="showPage('import')">📥 Import CSV</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Image</th><th>SKU Name</th><th>Category</th><th>Sub Cat</th><th>SP</th><th>MRP</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody id="prod-tbody">
+              ${pageProds.map(p=>`
+              <tr>
+                <td><div class="prod-img-cell">${p.imageUrl?`<img src="${p.imageUrl}"/>`:(CAT_ICONS[p.category]||'📦')}</div></td>
+                <td><b>${p.name}</b>${p.weight?`<br><span style="font-size:.68rem;color:var(--gray4)">${p.weight}</span>`:''}</td>
+                <td>${CAT_ICONS[p.category]||''} ${CAT_LABELS[p.category]||p.category}</td>
+                <td>${p.subCategory||'-'}</td>
+                <td><b>Rs. ${Number(p.sp||p.price||0).toLocaleString()}</b></td>
+                <td style="color:var(--gray4)">Rs. ${Number(p.mrp||0).toLocaleString()}</td>
+                <td><span class="badge ${p.inStock!==false?'badge-green':'badge-red'}">${p.inStock!==false?'In Stock':'Out'}</span></td>
+                <td><div class="tbl-actions">
+                  <button class="tbl-btn" onclick="openEditModal('${p.id}')">✏️ Edit</button>
+                  <button class="tbl-btn del" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">🗑️</button>
+                </div></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button class="pg-btn" onclick="changePage(-1)" ${currentPage===0?'disabled':''}>← Prev</button>
+          <span class="pg-info">Page ${currentPage+1} of ${Math.max(1,totalPages)} · ${filteredProducts.length} products</span>
+          <button class="pg-btn" onclick="changePage(1)" ${currentPage>=totalPages-1?'disabled':''}>Next →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.changePage = function(d) { currentPage = Math.max(0, currentPage+d); renderProductsTable(); };
+
+window.searchProducts = function(q) {
+  filteredProducts = q
+    ? allProducts.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||
+        (p.subCategory||'').toLowerCase().includes(q.toLowerCase()))
+    : [...allProducts];
+  currentPage = 0;
+  const tbody = document.getElementById('prod-tbody');
+  if (!tbody) return renderProductsTable();
+  const pageProds = filteredProducts.slice(0, PAGE_SIZE);
+  tbody.innerHTML = pageProds.map(p=>`
+    <tr>
+      <td><div class="prod-img-cell">${p.imageUrl?`<img src="${p.imageUrl}"/>`:(CAT_ICONS[p.category]||'📦')}</div></td>
+      <td><b>${p.name}</b>${p.weight?`<br><span style="font-size:.68rem;color:var(--gray4)">${p.weight}</span>`:''}</td>
+      <td>${CAT_ICONS[p.category]||''} ${CAT_LABELS[p.category]||p.category}</td>
+      <td>${p.subCategory||'-'}</td>
+      <td><b>Rs. ${Number(p.sp||p.price||0).toLocaleString()}</b></td>
+      <td style="color:var(--gray4)">Rs. ${Number(p.mrp||0).toLocaleString()}</td>
+      <td><span class="badge ${p.inStock!==false?'badge-green':'badge-red'}">${p.inStock!==false?'In Stock':'Out'}</span></td>
+      <td><div class="tbl-actions">
+        <button class="tbl-btn" onclick="openEditModal('${p.id}')">✏️ Edit</button>
+        <button class="tbl-btn del" onclick="deleteProduct('${p.id}','${p.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+};
+
+window.filterProducts = function(cat) {
+  filteredProducts = cat ? allProducts.filter(p=>p.category===cat) : [...allProducts];
+  currentPage = 0;
+  renderProductsTable();
+};
+
+/* ── DELETE ── */
+window.deleteProduct = async function(id, name) {
+  if (!confirm(`Delete "${name}"?`)) return;
+  try {
+    await deleteDoc(doc(db,'products',id));
+    allProducts = allProducts.filter(p=>p.id!==id);
+    filteredProducts = filteredProducts.filter(p=>p.id!==id);
+    renderProductsTable();
+    showToast('Product deleted','success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+/* ── MODAL ── */
+window.openAddModal = function() {
+  editingId = null; uploadedImageUrl = null;
+  document.getElementById('modal-title').textContent = 'Add Product';
+  ['name','weight'].forEach(f=>document.getElementById('f-'+f).value='');
+  ['cat','subcat','badge'].forEach(f=>document.getElementById('f-'+f).value='');
+  ['sp','mrp'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-stock').value='true';
+  document.getElementById('f-img-preview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23F5F5F5'/%3E%3Ctext x='40' y='44' text-anchor='middle' font-size='28' fill='%23CCC'%3E📷%3C/text%3E%3C/svg%3E";
+  document.getElementById('edit-id').value='';
+  document.getElementById('prod-modal').classList.add('open');
+};
+
+window.openEditModal = async function(id) {
+  editingId = id; uploadedImageUrl = null;
+  const snap = await getDoc(doc(db,'products',id));
+  if (!snap.exists()) return;
+  const p = snap.data();
+  document.getElementById('modal-title').textContent = 'Edit Product';
+  document.getElementById('f-name').value   = p.name||'';
+  document.getElementById('f-cat').value    = p.category||'';
+  updateSubCats();
+  document.getElementById('f-subcat').value = p.subCategory||'';
+  document.getElementById('f-sp').value     = p.sp||p.price||'';
+  document.getElementById('f-mrp').value    = p.mrp||'';
+  document.getElementById('f-weight').value = p.weight||'';
+  document.getElementById('f-badge').value  = p.badge||'';
+  document.getElementById('f-stock').value  = String(p.inStock!==false);
+  document.getElementById('edit-id').value  = id;
+  if (p.imageUrl) {
+    document.getElementById('f-img-preview').src = p.imageUrl;
+    uploadedImageUrl = p.imageUrl;
+  }
+  document.getElementById('prod-modal').classList.add('open');
+};
+
+window.closeModal = function() {
+  document.getElementById('prod-modal').classList.remove('open');
+};
+
+window.previewImg = function(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('f-img-preview').src = e.target.result;
+    reader.readAsDataURL(input.files[0]);
+  }
+};
+
+window.saveProduct = async function() {
+  const name    = document.getElementById('f-name').value.trim();
+  const cat     = document.getElementById('f-cat').value;
+  const subcat  = document.getElementById('f-subcat').value;
+  const sp      = parseFloat(document.getElementById('f-sp').value)||0;
+  const mrp     = parseFloat(document.getElementById('f-mrp').value)||0;
+  const weight  = document.getElementById('f-weight').value.trim();
+  const badge   = document.getElementById('f-badge').value;
+  const inStock = document.getElementById('f-stock').value === 'true';
+  const status  = document.getElementById('save-status');
+
+  if (!name||!cat||!sp) { showToast('Name, Category and SP are required','error'); return; }
+
+  status.textContent = 'Uploading...';
+  try {
+    // Upload image if selected
+    const imgInput = document.getElementById('f-img-input');
+    if (imgInput.files && imgInput.files[0]) {
+      const file = imgInput.files[0];
+      const imgRef = ref(storage, `products/${Date.now()}_${file.name}`);
+      await uploadBytes(imgRef, file);
+      uploadedImageUrl = await getDownloadURL(imgRef);
+    }
+
+    const data = {
+      name, category:cat, subCategory:subcat,
+      sp, mrp, price:sp,
+      weight, badge, inStock,
+      icon: CAT_ICONS[cat]||'📦',
+      imageUrl: uploadedImageUrl||'',
+      updatedAt: new Date().toISOString()
+    };
+
+    if (editingId) {
+      await updateDoc(doc(db,'products',editingId), data);
+      showToast('Product updated ✓','success');
+    } else {
+      data.createdAt = new Date().toISOString();
+      await addDoc(collection(db,'products'), data);
+      showToast('Product added ✓','success');
+    }
+    closeModal();
+    showPage('products');
+  } catch(e) {
+    status.textContent = '';
+    showToast('Error: '+e.message,'error');
+  }
+};
+
+/* ══════════════════════════════════
+   ADD PRODUCT PAGE
+   ══════════════════════════════════ */
+function renderAddProduct() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="sec-card">
+      <div class="sec-card-hdr"><h3>➕ Add New Product</h3></div>
+      <div class="sec-card-body">
+        <div class="form-grid">
+          <div class="form-field full"><label>SKU Name *</label><input type="text" id="ap-name" placeholder="e.g. Taj Super Basmati Rice 5kg"/></div>
+          <div class="form-field"><label>Category *</label>
+            <select id="ap-cat" onchange="apUpdateSubs()">
+              <option value="">Select Category</option>
+              ${Object.entries(CAT_LABELS).map(([k,v])=>`<option value="${k}">${CAT_ICONS[k]} ${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field"><label>Sub Category *</label><select id="ap-subcat"><option value="">Select Sub Category</option></select></div>
+          <div class="form-field"><label>Selling Price (SP) *</label><input type="number" id="ap-sp" placeholder="e.g. 1250"/></div>
+          <div class="form-field"><label>MRP</label><input type="number" id="ap-mrp" placeholder="e.g. 1400"/></div>
+          <div class="form-field"><label>Weight / Unit</label><input type="text" id="ap-weight" placeholder="e.g. 5 kg, 500 ml"/></div>
+          <div class="form-field"><label>Badge</label>
+            <select id="ap-badge">
+              <option value="">None</option>
+              <option value="Best Seller">Best Seller</option><option value="New">New</option>
+              <option value="Sale">Sale</option><option value="Popular">Popular</option>
+              <option value="Value Pack">Value Pack</option><option value="Premium">Premium</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Stock</label>
+            <select id="ap-stock"><option value="true">In Stock</option><option value="false">Out of Stock</option></select>
+          </div>
+          <div class="form-field full"><label>Product Image (optional)</label>
+            <div class="img-upload-wrap">
+              <input type="file" id="ap-img" accept="image/*" onchange="apPreviewImg(this)"/>
+              <img id="ap-img-preview" class="img-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23F5F5F5'/%3E%3Ctext x='40' y='44' text-anchor='middle' font-size='28' fill='%23CCC'%3E📷%3C/text%3E%3C/svg%3E"/>
+              <div style="font-size:.74rem;color:var(--gray4)">Click to upload</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-gold" onclick="apSave()">💾 Add Product</button>
+          <button class="btn btn-outline" onclick="apReset()">🔄 Reset</button>
+          <div id="ap-status" style="font-size:.76rem;color:var(--gray4);margin-left:auto;align-self:center"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.apUpdateSubs = function() {
+  const cat = document.getElementById('ap-cat').value;
+  const sel = document.getElementById('ap-subcat');
+  sel.innerHTML = '<option value="">Select Sub Category</option>';
+  (SUB_CATS[cat]||[]).forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
+};
+window.apPreviewImg = function(inp) {
+  if(inp.files&&inp.files[0]){const r=new FileReader();r.onload=e=>document.getElementById('ap-img-preview').src=e.target.result;r.readAsDataURL(inp.files[0]);}
+};
+window.apReset = function() { renderAddProduct(); };
+window.apSave = async function() {
+  const name   = document.getElementById('ap-name').value.trim();
+  const cat    = document.getElementById('ap-cat').value;
+  const subcat = document.getElementById('ap-subcat').value;
+  const sp     = parseFloat(document.getElementById('ap-sp').value)||0;
+  const mrp    = parseFloat(document.getElementById('ap-mrp').value)||0;
+  const weight = document.getElementById('ap-weight').value.trim();
+  const badge  = document.getElementById('ap-badge').value;
+  const inStock= document.getElementById('ap-stock').value==='true';
+  const status = document.getElementById('ap-status');
+  if (!name||!cat||!sp){showToast('Name, Category & SP required','error');return;}
+  status.textContent='Saving...';
+  try {
+    let imageUrl = '';
+    const imgInp = document.getElementById('ap-img');
+    if(imgInp.files&&imgInp.files[0]){
+      const f = imgInp.files[0];
+      const r2 = ref(storage,`products/${Date.now()}_${f.name}`);
+      await uploadBytes(r2,f);
+      imageUrl = await getDownloadURL(r2);
+    }
+    await addDoc(collection(db,'products'),{
+      name,category:cat,subCategory:subcat,sp,mrp,price:sp,
+      weight,badge,inStock,icon:CAT_ICONS[cat]||'📦',imageUrl,
+      createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
+    });
+    showToast('Product added successfully ✓','success');
+    status.textContent='';
+    apReset();
+  } catch(e){status.textContent='';showToast('Error: '+e.message,'error');}
+};
+
+/* ══════════════════════════════════
+   BULK IMPORT
+   ══════════════════════════════════ */
+function renderImport() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = `
+    <div class="sec-card" style="margin-bottom:20px">
+      <div class="sec-card-hdr"><h3>📥 Bulk Import Products (CSV)</h3></div>
+      <div class="sec-card-body">
+        <div style="background:var(--gold-l);border:1px solid #F5DFA0;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:.82rem;color:var(--gold-d)">
+          <b>📋 CSV Format Required:</b><br/>
+          Your CSV must have these columns (exact headers):<br/>
+          <code style="background:white;padding:2px 6px;border-radius:3px;font-size:.78rem">name, category, subCategory, sp, mrp, weight, badge, stock</code><br/><br/>
+          <b>Category values:</b> rice, commodities, oil-ghee, masala, tea-coffee, dairy, soaps, detergent, health<br/>
+          <b>Stock values:</b> true or false
+        </div>
+        <div class="import-area" onclick="document.getElementById('csv-input').click()">
+          <input type="file" id="csv-input" accept=".csv" onchange="parseCSV(this)"/>
+          <div class="import-icon">📄</div>
+          <h4>Click to select your CSV file</h4>
+          <p>Supports up to 1,500+ products in one import</p>
+        </div>
+        <div id="import-preview"></div>
+      </div>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-hdr"><h3>📋 CSV Template</h3></div>
+      <div class="sec-card-body">
+        <p style="font-size:.82rem;color:var(--gray4);margin-bottom:12px">Download this template and fill in your products:</p>
+        <button class="btn btn-outline" onclick="downloadTemplate()">⬇️ Download CSV Template</button>
+        <div style="margin-top:16px;font-size:.78rem;color:var(--gray4)">
+          <b>Example rows:</b><br/>
+          <code>Taj Super Basmati Rice,rice,Super Basmati,1250,1400,5 kg,Best Seller,true</code><br/>
+          <code>Moong Dal Split,commodities,Pulses,320,380,1 kg,,true</code>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.downloadTemplate = function() {
+  const csv = 'name,category,subCategory,sp,mrp,weight,badge,stock\nTaj Super Basmati Rice,rice,Super Basmati,1250,1400,5 kg,Best Seller,true\nMoong Dal Split,commodities,Pulses,320,380,1 kg,,true\nCanola Oil,oil-ghee,Cooking Oil,380,420,1 ltr,,true';
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download='taj-rice-products-template.csv'; a.click();
+};
+
+let parsedRows = [];
+window.parseCSV = function(input) {
+  if (!input.files||!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const lines = text.split('\n').filter(l=>l.trim());
+    const headers = lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));
+    parsedRows = [];
+    const errors = [];
+
+    for (let i=1;i<lines.length;i++) {
+      const vals = lines[i].split(',').map(v=>v.trim().replace(/"/g,''));
+      if (vals.length<4) continue;
+      const row = {};
+      headers.forEach((h,idx)=>row[h]=vals[idx]||'');
+      if (!row.name||!row.category||!row.sp){errors.push(`Row ${i+1}: Missing required field`);continue;}
+      parsedRows.push({
+        name: row.name,
+        category: row.category,
+        subCategory: row.subcategory||row['sub category']||row.subcategoryname||'',
+        sp: parseFloat(row.sp)||0,
+        mrp: parseFloat(row.mrp)||0,
+        weight: row.weight||'',
+        badge: row.badge||'',
+        inStock: row.stock!=='false',
+        icon: CAT_ICONS[row.category]||'📦',
+        imageUrl: '',
+        price: parseFloat(row.sp)||0,
+      });
+    }
+
+    const prev = document.getElementById('import-preview');
+    prev.innerHTML = `
+      <div class="import-preview">
+        <div class="import-stats">
+          <div class="import-stat"><div class="is-val">${parsedRows.length}</div><div class="is-lbl">Valid Products</div></div>
+          <div class="import-stat"><div class="is-val">${errors.length}</div><div class="is-lbl">Skipped Rows</div></div>
+          <div class="import-stat"><div class="is-val">${new Set(parsedRows.map(r=>r.category)).size}</div><div class="is-lbl">Categories</div></div>
+        </div>
+        ${errors.length?`<div style="background:#FEE2E2;padding:10px;border-radius:6px;font-size:.74rem;color:var(--red);margin-bottom:12px">${errors.slice(0,5).join('<br/>')}</div>`:''}
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <button class="btn btn-green" onclick="importToFirebase()">🚀 Import ${parsedRows.length} Products to Firebase</button>
+          <button class="btn btn-outline" onclick="parsedRows=[];document.getElementById('import-preview').innerHTML=''">✕ Cancel</button>
+        </div>
+        <div class="preview-table">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Category</th><th>Sub Cat</th><th>SP</th><th>MRP</th><th>Weight</th></tr></thead>
+            <tbody>${parsedRows.slice(0,20).map((r,i)=>`
+              <tr>
+                <td style="color:var(--gray4)">${i+1}</td>
+                <td><b>${r.name}</b></td>
+                <td>${CAT_ICONS[r.category]||''} ${r.category}</td>
+                <td>${r.subCategory||'-'}</td>
+                <td>Rs. ${r.sp.toLocaleString()}</td>
+                <td style="color:var(--gray4)">Rs. ${r.mrp.toLocaleString()}</td>
+                <td>${r.weight||'-'}</td>
+              </tr>`).join('')}
+              ${parsedRows.length>20?`<tr><td colspan="7" style="text-align:center;color:var(--gray4);padding:10px">...and ${parsedRows.length-20} more products</td></tr>`:''}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  };
+  reader.readAsText(input.files[0]);
+};
+
+window.importToFirebase = async function() {
+  if (!parsedRows.length){showToast('No products to import','error');return;}
+  const btn = document.querySelector('#import-preview .btn-green');
+  btn.disabled=true; btn.textContent='⏳ Importing...';
+
+  let done=0, errors=0;
+  const BATCH=50;
+  for(let i=0;i<parsedRows.length;i+=BATCH){
+    const batch = parsedRows.slice(i,i+BATCH);
+    await Promise.all(batch.map(async p=>{
+      try{
+        await addDoc(collection(db,'products'),{...p,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+        done++;
+      }catch(e){errors++;console.error(e);}
+    }));
+    btn.textContent=`⏳ Importing... ${done}/${parsedRows.length}`;
+  }
+  btn.textContent=`✅ Done! ${done} imported`;
+  showToast(`${done} products imported successfully!`,'success');
+  if(errors) showToast(`${errors} rows failed`,'error');
+  parsedRows=[];
+};
+
+/* ══════════════════════════════════
+   CATEGORIES
+   ══════════════════════════════════ */
+async function renderCategories() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const snap = await getDocs(collection(db,'products'));
+  const cats = {};
+  snap.forEach(d=>{const p=d.data();if(p.category){cats[p.category]=(cats[p.category]||0)+1;}});
+
+  let hasLiveCats = false;
+  try {
+    const catSnap = await getDocs(collection(db,'categories'));
+    hasLiveCats = !catSnap.empty;
+  } catch(e) {}
+
+  c.innerHTML = `
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <h3>🗂️ Categories (${ADMIN_CATS.length})</h3>
+        <div style="display:flex;gap:10px">
+          ${!hasLiveCats ? `<button class="btn btn-outline" onclick="seedDefaultCategories()">🌱 Seed Default Categories</button>` : ''}
+          <button class="btn btn-gold" onclick="openCatModal()">➕ Add Category</button>
+        </div>
+      </div>
+      <div class="sec-card-body">
+        ${!hasLiveCats ? `<div style="background:var(--gold-l);border:1px solid #F5DFA0;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:.8rem;color:var(--gold-d)">
+          <b>ℹ️ First time here?</b> Click "Seed Default Categories" once to save your 9 existing categories into Firebase — after that you can add, edit, and delete categories freely and they'll show live on your website.
+        </div>` : ''}
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          ${ADMIN_CATS.map(cat=>`
+          <div style="background:var(--gray1);border:1px solid var(--gray2);border-radius:10px;padding:18px;position:relative">
+            <div style="cursor:pointer" onclick="showPage('products');filterByCat('${cat.id}')">
+              <div style="height:70px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;border-radius:8px;overflow:hidden;${cat.image?'':'font-size:2rem'}">
+                ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover"/>` : cat.icon}
+              </div>
+              <div style="font-weight:700;font-size:.85rem;margin-bottom:4px;text-align:center">${cat.label}</div>
+              <div style="font-size:.72rem;color:var(--gray4);text-align:center">${cats[cat.id]||0} products</div>
+              <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center">
+                ${(cat.subCategories||[]).slice(0,4).map(s=>`<span style="background:white;border:1px solid var(--gray2);border-radius:3px;padding:2px 7px;font-size:.62rem">${s}</span>`).join('')}
+                ${(cat.subCategories||[]).length>4?`<span style="font-size:.62rem;color:var(--gray4)">+${cat.subCategories.length-4} more</span>`:''}
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--gray2)">
+              <button class="tbl-btn" style="flex:1" onclick="event.stopPropagation();openCatModal('${cat.id}')">✏️ Edit</button>
+              <button class="tbl-btn del" style="flex:1" onclick="event.stopPropagation();deleteCategory('${cat.id}','${cat.label.replace(/'/g,"\\'")}')">🗑️ Delete</button>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════
+   CATEGORY MODAL — Add / Edit / Delete
+   ══════════════════════════════════ */
+let editingCatId = null;
+let currentSubChips = [];
+let currentCatImageUrl = null;
+
+window.cPreviewImg = function(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('c-img-preview').src = e.target.result;
+    reader.readAsDataURL(input.files[0]);
+  }
+};
+
+window.openCatModal = function(catId) {
+  editingCatId = catId || null;
+  currentSubChips = [];
+  currentCatImageUrl = null;
+  const modal = document.getElementById('cat-modal');
+  document.getElementById('cat-modal-title').textContent = catId ? 'Edit Category' : 'Add Category';
+  const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23F5F5F5'/%3E%3Ctext x='40' y='44' text-anchor='middle' font-size='28' fill='%23CCC'%3E📷%3C/text%3E%3C/svg%3E";
+  document.getElementById('c-img-preview').src = placeholder;
+  document.getElementById('c-img-input').value = '';
+
+  if (catId) {
+    const cat = ADMIN_CATS.find(c=>c.id===catId);
+    document.getElementById('c-id').value    = cat.id;
+    document.getElementById('c-id').disabled = true;
+    document.getElementById('c-label').value = cat.label;
+    document.getElementById('c-icon').value  = cat.icon;
+    document.getElementById('c-order').value = cat.order ?? 0;
+    const [c1,c2] = (cat.color||'#333333,#666666').split(',');
+    document.getElementById('c-color1').value = c1;
+    document.getElementById('c-color2').value = c2;
+    currentSubChips = [...(cat.subCategories||[])];
+    if (cat.image) {
+      currentCatImageUrl = cat.image;
+      document.getElementById('c-img-preview').src = cat.image;
+    }
+  } else {
+    document.getElementById('c-id').value    = '';
+    document.getElementById('c-id').disabled = false;
+    document.getElementById('c-label').value = '';
+    document.getElementById('c-icon').value  = '';
+    document.getElementById('c-order').value = ADMIN_CATS.length;
+    document.getElementById('c-color1').value = '#333333';
+    document.getElementById('c-color2').value = '#666666';
+  }
+  renderSubChips();
+  document.getElementById('c-sub-input').value='';
+  modal.classList.add('open');
+};
+
+window.closeCatModal = function() {
+  document.getElementById('cat-modal').classList.remove('open');
+};
+
+function renderSubChips() {
+  const wrap = document.getElementById('c-sub-chips');
+  wrap.innerHTML = currentSubChips.map((s,i)=>`
+    <span style="display:inline-flex;align-items:center;gap:6px;background:white;border:1px solid var(--gray3);border-radius:20px;padding:4px 6px 4px 12px;font-size:.76rem;margin:3px">
+      ${s} <button onclick="removeSubChip(${i})" style="background:var(--gray2);border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:.7rem;line-height:1">✕</button>
+    </span>`).join('');
+}
+window.removeSubChip = function(i) { currentSubChips.splice(i,1); renderSubChips(); };
+window.addSubChip = function() {
+  const inp = document.getElementById('c-sub-input');
+  const val = inp.value.trim();
+  if (val && !currentSubChips.includes(val)) {
+    currentSubChips.push(val);
+    renderSubChips();
+  }
+  inp.value='';
+  inp.focus();
+};
+
+window.saveCategory = async function() {
+  let id    = document.getElementById('c-id').value.trim();
+  const label = document.getElementById('c-label').value.trim();
+  const icon  = document.getElementById('c-icon').value.trim();
+  const order = parseInt(document.getElementById('c-order').value)||0;
+  const c1    = document.getElementById('c-color1').value;
+  const c2    = document.getElementById('c-color2').value;
+
+  if (!label || !icon) { showToast('Label and icon are required','error'); return; }
+
+  if (!editingCatId) {
+    if (!id) id = label.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    if (!id) { showToast('Could not generate category ID, please check the label','error'); return; }
+    if (ADMIN_CATS.find(c=>c.id===id)) { showToast('A category with this ID already exists','error'); return; }
+  } else {
+    id = editingCatId;
+  }
+
+  try {
+    // Upload category image if a new one was selected
+    const imgInput = document.getElementById('c-img-input');
+    if (imgInput.files && imgInput.files[0]) {
+      const file = imgInput.files[0];
+      const imgRef = ref(storage, `categories/${id}_${Date.now()}_${file.name}`);
+      await uploadBytes(imgRef, file);
+      currentCatImageUrl = await getDownloadURL(imgRef);
+    }
+
+    await setDoc(doc(db,'categories',id), {
+      label, icon, color:`${c1},${c2}`,
+      subCategories: currentSubChips, order,
+      image: currentCatImageUrl || ''
+    });
+    showToast(editingCatId?'Category updated ✓':'Category added ✓','success');
+    closeCatModal();
+    await loadAdminCategories();
+    renderCategories();
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.deleteCategory = async function(id, label) {
+  const cnt = (allProducts||[]).filter(p=>p.category===id).length;
+  const warnMsg = cnt>0
+    ? `"${label}" has ${cnt} products in it. Deleting the category will NOT delete those products, but they will show under an unrecognized category on the site. Continue?`
+    : `Delete category "${label}"?`;
+  if (!confirm(warnMsg)) return;
+  try {
+    await deleteDoc(doc(db,'categories',id));
+    showToast('Category deleted','success');
+    await loadAdminCategories();
+    renderCategories();
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+/* Keyboard shortcut: Enter to login */
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
