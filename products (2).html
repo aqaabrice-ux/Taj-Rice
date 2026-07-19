@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Products — Taj Rice</title>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+
+/* ══════════════════════════════════════
+   VIEW 1 — SHOP BY CATEGORY LANDING
+   ══════════════════════════════════════ */
+#view-landing  { display:block; }
+#view-products { display:none; }
+
+.landing-wrap { width:100%; padding:40px 40px 60px; max-width:1600px; margin:auto; }
+
+/* Scroll wrapper for category strip */
+.cat-scroll-wrap {
+  position:relative;
+  margin-bottom:52px;
+}
+.cat-scroll-btn {
+  position:absolute;
+  top:50%; transform:translateY(-50%);
+  width:36px; height:36px;
+  background:white;
+  border:1px solid var(--gray3);
+  border-radius:50%;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; color:var(--dark);
+  z-index:10;
+  transition:all .15s;
+  line-height:1;
+}
+.cat-scroll-btn:hover { background:var(--gold); color:white; border-color:var(--gold); }
+.cat-scroll-btn.left  { left:-18px; }
+.cat-scroll-btn.right { right:-18px; }
+
+.landing-title { text-align:center; margin-bottom:36px; }
+.landing-title .lt-badge {
+  display:inline-block;
+  background:linear-gradient(135deg,#E09A12,#C8860A);
+  color:white;
+  font-size:.65rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  padding:4px 16px; border-radius:50px;
+  margin-bottom:14px;
+  box-shadow:0 3px 12px rgba(200,134,10,.35);
+}
+.landing-title h1 {
+  font-size:2rem; color:var(--dark); margin-bottom:8px;
+  font-family:'DM Serif Display',serif; font-weight:400;
+  letter-spacing:-.01em;
+}
+.landing-title h1 em { font-style:italic; color:var(--gold); }
+.landing-title p  { font-size:.84rem; color:var(--gray4); line-height:1.65; }
+.lt-line { width:52px; height:3px; background:linear-gradient(90deg,#E09A12,#C8860A); margin:14px auto 0; border-radius:2px; }
+
+/* Category grid — uniform card sizes, SS1 style horizontal scroll on desktop */
+.cat-landing-grid {
+  display:grid;
+  grid-template-columns:repeat(9, 160px);
+  gap:16px;
+  margin-bottom:52px;
+  justify-content:center;
+  overflow-x:auto;
+  padding-bottom:8px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--gray3) transparent;
+}
+.cat-landing-card {
+  width:160px;
+  background:var(--white);
+  border:1px solid var(--gray3);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .18s, box-shadow .18s, border-color .18s;
+  text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+  flex-shrink:0;
+}
+.cat-landing-card:hover {
+  transform:translateY(-5px);
+  box-shadow:0 12px 32px rgba(0,0,0,.13);
+  border-color:var(--gold);
+}
+.clc-img {
+  width:160px;
+  height:148px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:4.5rem;
+  transition:transform .22s;
+  position:relative;
+  flex-shrink:0;
+  overflow:hidden;
+}
+.clc-img img {
+  width:100%; height:100%;
+  object-fit:cover; object-position:center;
+  display:block;
+}
+.cat-landing-card:hover .clc-img { transform:scale(1.1); }
+.clc-body {
+  padding:12px 8px 14px;
+  border-top:1px solid var(--gray2);
+  background:var(--white);
+}
+.clc-name  { font-size:.82rem; font-weight:700; color:var(--dark); line-height:1.3; }
+.clc-count { font-size:.69rem; color:var(--gray4); margin-top:3px; font-weight:500; }
+
+/* HOT SELLING section */
+.hot-section { margin-top:0; }
+.hot-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:18px; padding-bottom:10px;
+  border-bottom:2px solid var(--gray2);
+}
+.hot-hdr h2 { font-size:1.3rem; color:var(--dark); }
+.hot-hdr h2 span { color:var(--gold-d); }
+.hot-link { font-size:.76rem; font-weight:700; color:var(--gold-d); cursor:pointer; border:none; background:none; }
+.hot-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(175px,1fr));
+  gap:14px;
+}
+
+/* ══════════════════════════════════════
+   VIEW 2 — SIDEBAR + PRODUCTS
+   ══════════════════════════════════════ */
+.products-layout { display:flex; gap:0; align-items:flex-start; width:100%; }
+
+/* SIDEBAR */
+.sidebar {
+  width:220px; flex-shrink:0;
+  position:sticky; top:68px;
+  height:calc(100vh - 68px);
+  overflow-y:auto;
+  background:var(--white);
+  border-right:1px solid var(--gray2);
+  scrollbar-width:thin;
+  z-index:100;
+}
+.sb-hdr {
+  background:var(--dark); padding:14px 16px;
+  font-size:.68rem; font-weight:800; color:rgba(255,255,255,.6);
+  text-transform:uppercase; letter-spacing:.1em;
+  display:flex; align-items:center; gap:8px;
+  position:sticky; top:0; z-index:10;
+}
+.sb-hdr em { color:var(--gold); font-style:normal; }
+
+/* Each category wrap — relative for flyout */
+.sb-cat-wrap { position:relative; }
+
+/* Main category row */
+.sb-cat {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:11px 14px; cursor:pointer;
+  border-bottom:1px solid var(--gray2);
+  border-left:3px solid transparent;
+  transition:all .14s;
+}
+.sb-cat:hover,
+.sb-cat-wrap:hover .sb-cat { background:var(--gray1); border-left-color:var(--gold); }
+.sb-cat.active { background:#FFF8E8; border-left-color:var(--gold); }
+.sb-cat.active .sb-name { color:var(--gold-d); font-weight:700; }
+.sb-left { display:flex; align-items:center; gap:9px; }
+.sb-ico  { font-size:.95rem; }
+.sb-name { font-size:.78rem; font-weight:600; color:#444; }
+.sb-right-row { display:flex; align-items:center; gap:6px; }
+.sb-cnt { font-size:.62rem; background:var(--gray2); color:var(--gray4); padding:2px 6px; border-radius:10px; font-weight:700; min-width:20px; text-align:center; }
+.sb-cat.active .sb-cnt { background:var(--gold); color:white; }
+.sb-cat-wrap:hover .sb-cnt { background:var(--gold); color:white; }
+.sb-arrow { font-size:.65rem; color:var(--gray4); }
+
+/* INLINE sub-categories — shown below active category in sidebar */
+.sb-inline-subs { display:none; background:#FAFAF5; border-bottom:1px solid var(--gray2); }
+.sb-inline-subs.show { display:block; }
+.sb-inline-item {
+  display:flex; align-items:center; gap:7px;
+  padding:8px 14px 8px 32px;
+  font-size:.74rem; color:#666; cursor:pointer;
+  border-left:3px solid transparent; transition:all .12s;
+}
+.sb-inline-item:hover { background:var(--gold-l); color:var(--gold-d); border-left-color:var(--gold); }
+.sb-inline-item.active { background:var(--gold-l); color:var(--gold-d); font-weight:700; border-left-color:var(--gold); }
+
+/* FLYOUT PANEL — large grid panel like Imtiaz SS2, appears on hover */
+.sb-flyout {
+  display:none;
+  position:fixed;
+  left:220px;
+  background:var(--white);
+  border:1px solid var(--gray3);
+  border-top:3px solid var(--gold);
+  border-radius:0 0 var(--r) var(--r);
+  box-shadow:6px 6px 32px rgba(0,0,0,.14);
+  z-index:999;
+  padding:20px;
+  min-width:480px;
+  max-width:640px;
+}
+.sb-cat-wrap:hover .sb-flyout { display:block; }
+.sb-flyout-header {
+  font-size:.7rem; font-weight:800; color:var(--gold-d);
+  text-transform:uppercase; letter-spacing:.1em;
+  margin-bottom:14px; padding-bottom:10px;
+  border-bottom:1px solid var(--gray2);
+  display:flex; align-items:center; gap:8px;
+}
+/* Grid of sub-category cards inside flyout */
+.sb-flyout-grid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+}
+.sb-flyout-card {
+  background:var(--gray1); border:1px solid var(--gray2);
+  border-radius:8px; padding:14px 12px;
+  text-align:center; cursor:pointer;
+  transition:all .15s;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.sb-flyout-card:hover { background:var(--gold-l); border-color:var(--gold); }
+.sb-flyout-card.active { background:var(--gold-l); border-color:var(--gold); }
+.sfc-icon { font-size:1.6rem; }
+.sfc-name { font-size:.74rem; font-weight:600; color:var(--dark); line-height:1.3; }
+.sfc-name.active-text { color:var(--gold-d); font-weight:800; }
+
+/* MAIN CONTENT */
+.products-main { flex:1; min-width:0; padding:24px 32px; }
+
+/* Back button */
+.back-to-cats {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:.76rem; font-weight:600; color:var(--dark); cursor:pointer;
+  background:var(--gray2); border:1px solid var(--gray3);
+  border-radius:6px; padding:6px 14px; margin-bottom:16px;
+  transition:all .12s;
+}
+.back-to-cats:hover { background:var(--gray3); }
+
+/* Cat banner */
+.cat-banner {
+  width:100%; height:150px; border-radius:14px;
+  overflow:hidden; position:relative;
+  display:flex; align-items:center; margin-bottom:22px;
+  box-shadow:0 6px 28px rgba(0,0,0,.18);
+}
+.cb-bg { position:absolute; inset:0; }
+.cb-ov { position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.1)); }
+.cb-body { position:relative; z-index:1; padding:0 32px; display:flex; align-items:center; justify-content:space-between; width:100%; }
+.cb-body h1 { font-size:1.5rem; color:white; margin-bottom:5px; font-family:'DM Serif Display',serif; font-weight:400; }
+.cb-body p  { font-size:.8rem; color:rgba(255,255,255,.75); }
+.cb-big { font-size:4.5rem; filter:drop-shadow(0 6px 16px rgba(0,0,0,.3)); }
+
+/* Sub-tab filter bar (above product grid) */
+.sub-tab-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.stab {
+  padding:5px 14px; border-radius:4px;
+  border:1px solid var(--gray3); background:var(--white);
+  font-size:.74rem; font-weight:600; color:#555;
+  cursor:pointer; transition:all .13s;
+}
+.stab:hover { border-color:var(--gold); color:var(--gold-d); }
+.stab.active { background:var(--dark); color:white; border-color:var(--dark); }
+
+.toolbar {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; flex-wrap:wrap; gap:8px;
+}
+.toolbar-info { font-size:.74rem; color:var(--gray4); }
+.toolbar-info strong { color:var(--dark); font-weight:700; }
+.sort-sel { padding:6px 10px; border:1px solid var(--gray3); border-radius:5px; font-size:.72rem; background:var(--white); color:var(--dark); outline:none; cursor:pointer; }
+.sort-sel:focus { border-color:var(--gold); }
+
+.pgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:13px; }
+.pcard { opacity:0; animation:cin .3s ease forwards; }
+@keyframes cin { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+.empty-state { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--gray4); }
+.empty-state .ei { font-size:2.5rem; margin-bottom:12px; }
+
+/* Breadcrumb inside products view */
+.bc-bar { padding:14px 32px 0; }
+
+@media(max-width:900px){
+  .products-layout { flex-direction:column; }
+  .sidebar { width:100%; position:static; height:auto; border-right:none; border-bottom:1px solid var(--gray2); overflow:visible; }
+  .sb-flyout { display:none !important; }
+  .sb-inline-subs.show { display:block; }
+  .cat-scroll-btn { display:none; }
+  .landing-wrap { padding:24px 16px 40px; }
+  .cat-landing-grid { grid-template-columns:repeat(5, 148px); gap:10px; }
+  .products-main { padding:16px; }
+}
+@media(max-width:600px){
+  .cat-landing-grid { grid-template-columns:repeat(3, 140px); }
+  .clc-img { height:110px; font-size:3.5rem; }
+  .pgrid { grid-template-columns:repeat(2,1fr); }
+  .cat-banner { height:110px; } .cb-big { font-size:3rem; }
+  .sb-flyout-grid { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<div id="ann">🚚 <em>Free Delivery</em> on orders above Rs. 2,000 &nbsp;·&nbsp; 💵 Cash on Delivery<button id="ann-x">✕</button></div>
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="logo" onclick="goHome()"><img src="logo-intro.png" alt="Taj Rice" class="logo-img"/></div>
+    <nav class="hdr-nav">
+      <div class="nav-link" onclick="goHome()">Home</div>
+      <div class="nav-link active" onclick="showLanding()">Products</div>
+      <div class="nav-link" onclick="goAbout()">About</div>
+    </nav>
+    <div class="hdr-right">
+      <div class="hdr-search"><input type="text" id="hdr-sinput" placeholder="Search products…" autocomplete="off"/><button class="hdr-search-btn">🔍</button><div id="hdr-search-drop"></div></div>
+      <button class="cart-btn">🛒 Cart <span class="cart-badge" id="cart-badge1">0</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════
+     VIEW 1: SHOP BY CATEGORY LANDING
+     ══════════════════════════════════════ -->
+<div id="view-landing">
+  <div class="landing-wrap">
+
+    <!-- Category grid -->
+    <div class="landing-title">
+      <div class="lt-badge">✦ All Categories</div>
+      <h1>Shop by <em>Category</em></h1>
+      <p>Browse our full range of premium groceries and daily essentials</p>
+      <div class="lt-line"></div>
+    </div>
+    <div class="cat-scroll-wrap">
+      <button class="cat-scroll-btn left" id="cat-scroll-l" onclick="scrollCats(-1)">‹</button>
+      <div class="cat-landing-grid" id="cat-landing-grid"></div>
+      <button class="cat-scroll-btn right" id="cat-scroll-r" onclick="scrollCats(1)">›</button>
+    </div>
+
+    <!-- Hot Selling -->
+    <div class="hot-section">
+      <div class="hot-hdr">
+        <h2>🔥 Hot <span>Selling</span> Products</h2>
+        <button class="hot-link" onclick="selectCat('rice')">View All →</button>
+      </div>
+      <div class="hot-grid" id="hot-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW 2: SIDEBAR + PRODUCTS
+     ══════════════════════════════════════ -->
+<div id="view-products">
+
+  <!-- Breadcrumb -->
+  <div class="bc-bar">
+    <div class="bc">
+      <a onclick="goHome()">Home</a>
+      <span class="sep">›</span>
+      <a onclick="showLanding()">Products</a>
+      <span class="sep">›</span>
+      <span class="cur" id="bc-cur">Category</span>
+    </div>
+  </div>
+
+  <div class="products-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-hdr">☰ &nbsp;<em>All Categories</em></div>
+      <div id="sb-cats"></div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="products-main">
+      <button class="back-to-cats" onclick="showLanding()">← Back to All Categories</button>
+
+      <div class="cat-banner" id="cat-banner">
+        <div class="cb-bg" id="cb-bg"></div>
+        <div class="cb-ov"></div>
+        <div class="cb-body">
+          <div><h1 id="cb-title">Category</h1><p id="cb-sub">Browse selection</p></div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-info">Showing <strong id="prod-count">0</strong> products</div>
+        <select class="sort-sel" id="sort-sel" onchange="applySort()">
+          <option value="default">Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name">Name: A–Z</option>
+        </select>
+      </div>
+      <div class="sub-tab-bar" id="sub-tab-bar"></div>
+      <div class="pgrid" id="prod-grid"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer"><div class="footer-inner"><div class="footer-grid">
+  <div><div class="footer-brand-name">🌾 Taj Rice</div><p class="footer-brand-desc">Your trusted source for premium basmati rice and quality daily groceries.</p><a class="footer-wa" href="https://wa.me/923128168702" target="_blank">📱 +92 312 8168702</a></div>
+  <div class="footer-col"><h4>Shop</h4><ul><li onclick="selectCat('rice')">Rice</li><li onclick="selectCat('commodities')">Commodities</li><li onclick="selectCat('oil-ghee')">Oil & Ghee</li><li onclick="selectCat('masala')">Masala</li></ul></div>
+  <div class="footer-col"><h4>More</h4><ul><li onclick="selectCat('dairy')">Dairy</li><li onclick="selectCat('soaps')">Soaps & Shampoo</li><li onclick="selectCat('detergent')">Detergent</li><li onclick="selectCat('health')">Health & Beauty</li></ul></div>
+  <div class="footer-col"><h4>Order Info</h4><ul><li>📦 Cash on Delivery</li><li>🚚 Free Delivery Rs.2,000+</li><li>📞 +92 312 8168702</li><li>⏰ 9 AM – 9 PM Daily</li></ul></div>
+</div><div class="footer-bottom"><p>© 2025 Taj Rice. All rights reserved.</p><span class="footer-cod">💵 CASH ON DELIVERY</span></div></div></footer>
+
+<a class="float-wa" href="https://wa.me/923128168702?text=Hello!" target="_blank" title="WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+</a>
+
+<script src="data.js"></script>
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const FB = {
+  apiKey:"AIzaSyBmU634qA1XMPUJfZuHAZa8EpgcrQ_tDYU",
+  authDomain:"taj-rice.firebaseapp.com",
+  projectId:"taj-rice",
+  storageBucket:"taj-rice.firebasestorage.app",
+  messagingSenderId:"603231287383",
+  appId:"1:603231287383:web:541beab2cde0676d584b12"
+};
+
+const CAT_ICONS  = {rice:'🌾',commodities:'🌽','oil-ghee':'🫙',masala:'🌶️','tea-coffee':'☕',dairy:'🥛',soaps:'🧴',detergent:'🧺',health:'💄'};
+const CAT_BG     = {rice:'linear-gradient(135deg,#FFF8E0,#FFE47A)',commodities:'linear-gradient(135deg,#E8F5E9,#A5D6A7)','oil-ghee':'linear-gradient(135deg,#E3F2FD,#90CAF9)',masala:'linear-gradient(135deg,#FFEBEE,#EF9A9A)','tea-coffee':'linear-gradient(135deg,#FBE9E7,#FFAB91)',dairy:'linear-gradient(135deg,#EDE7F6,#B39DDB)',soaps:'linear-gradient(135deg,#FCE4EC,#F48FB1)',detergent:'linear-gradient(135deg,#E0F2F1,#80CBC4)',health:'linear-gradient(135deg,#FCE4EC,#F48FB1)'};
+const SUB_CATS   = {rice:['All','Super Basmati','Sella Basmati','Kainat','Parboiled','Broken Rice'],commodities:['All','Pulses','Flour','Beans','Grains'],'oil-ghee':['All','Cooking Oil','Vegetable Ghee','Desi Ghee','Olive Oil'],masala:['All','Recipe Mixes','Garam Masala','Single Spices','Salt & Pepper'],'tea-coffee':['All','Black Tea','Green Tea','Coffee','Milk Tea Mixes'],dairy:['All','Milk','Butter','Yogurt','Cream','Cheese'],soaps:['All','Bath Soaps','Shampoo','Conditioner','Hand Wash','Body Wash'],detergent:['All','Washing Powder','Liquid Detergent','Fabric Softener','Dishwash','Surface Cleaners'],health:['All','Skin Care','Hair Care','Oral Care','Vitamins','Feminine Care']};
+
+window._fbProds = {};
+window._fbAll   = [];
+let dataLoaded  = false;
+
+const params  = new URLSearchParams(window.location.search);
+let activeCat = params.get('cat') || '';
+let activeSub = decodeURIComponent(params.get('sub') || 'All');
+
+// ── LOAD FROM FIREBASE ──
+async function loadFromFirebase() {
+  try {
+    const existing = getApps().find(a=>a.name==='taj-products');
+    const app = existing || initializeApp(FB,'taj-products');
+    const db  = getFirestore(app);
+    const snap = await getDocs(query(collection(db,'products'), orderBy('name')));
+    snap.forEach(d => {
+      const p = {id:d.id,...d.data(), price:d.data().sp||d.data().price||0, section:d.data().category};
+      if (!window._fbProds[p.category]) window._fbProds[p.category]=[];
+      window._fbProds[p.category].push(p);
+      window._fbAll.push(p);
+    });
+    dataLoaded = true;
+    console.log('✅ Loaded '+window._fbAll.length+' products from Firebase');
+  } catch(e) {
+    console.warn('Firebase failed, using static data:', e.message);
+    if (typeof PRODUCTS !== 'undefined') {
+      Object.entries(PRODUCTS).forEach(([cat,arr]) => {
+        window._fbProds[cat] = arr.map(p=>({...p,section:cat,sp:p.price}));
+        window._fbAll.push(...window._fbProds[cat]);
+      });
+    }
+    dataLoaded = true;
+  }
+}
+
+// ── PRODUCT CARD ──
+function makeCard(p, sec, i=0) {
+  const badge = p.badge?`<div class="pcard-badge ${['Best Seller','Premium','Value Pack','Top Pick'].includes(p.badge)?'gold':''}">${p.badge}</div>`:'';
+  const price = p.sp||p.price||0;
+  const imgHtml = p.imageUrl
+    ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;" alt="${p.name}"/>`
+    : (CAT_ICONS[sec]||'📦');
+  const pj = JSON.stringify({id:p.id,name:p.name,icon:CAT_ICONS[sec]||'📦',weight:p.weight||'',price:Number(price),section:sec}).replace(/"/g,"'");
+  return `<div class="pcard" style="animation-delay:${i*.04}s" onclick="goProduct('${p.id}','${sec}')">
+    ${badge}
+    <div class="pcard-img">${imgHtml}</div>
+    <div class="pcard-body">
+      <div class="pcard-cat">${p.subCategory||p.cat||''}</div>
+      <div class="pcard-name">${p.name}</div>
+      <div class="pcard-wt">${p.weight||''}</div>
+      <div class="pcard-foot">
+        <div class="pcard-price">Rs. ${Number(price).toLocaleString()}</div>
+        <button class="pcard-add" onclick="event.stopPropagation();Cart.add(${pj});CartDrawer.open()">+ Add</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── LANDING ──
+function buildLanding() {
+  const grid = document.getElementById('cat-landing-grid');
+  if (!grid) return;
+  grid.innerHTML = CATEGORIES.map(c => {
+    const cnt = (window._fbProds[c.id]||[]).length;
+    const bg  = CAT_BG[c.id] || (c.color ? `linear-gradient(135deg,${c.color})` : '#F5F5F5');
+    const tileContent = c.image
+      ? `<img src="${c.image}" alt="${c.label}"/>`
+      : c.icon;
+    return `<div class="cat-landing-card" onclick="selectCat('${c.id}')">
+      <div class="clc-img" style="background:${bg}">${tileContent}</div>
+      <div class="clc-body"><div class="clc-name">${c.label}</div>
+      <div class="clc-count">${cnt} products</div></div></div>`;
+  }).join('');
+  const hot = [];
+  CATEGORIES.forEach(c => {
+    const badged = (window._fbProds[c.id]||[]).filter(p=>p.badge);
+    if (badged.length) hot.push({...badged[0],section:c.id});
+  });
+  const hg = document.getElementById('hot-grid');
+  if (hg) hg.innerHTML = hot.slice(0,8).map((p,i)=>makeCard(p,p.section,i)).join('');
+}
+
+// ── VIEWS ──
+window.showLanding = function() {
+  document.getElementById('view-landing').style.display='block';
+  document.getElementById('view-products').style.display='none';
+  activeCat=''; activeSub='All';
+  history.replaceState(null,'','products.html');
+  document.title='Products — Taj Rice';
+  window.scrollTo(0,0);
+  buildLanding();
+};
+function showProductsView() {
+  document.getElementById('view-landing').style.display='none';
+  document.getElementById('view-products').style.display='block';
+  window.scrollTo(0,0);
+}
+
+// ── SELECT CATEGORY ──
+window.selectCat = function(catId, sub) {
+  activeCat=catId; activeSub=sub||'All';
+  history.replaceState(null,'',`?cat=${catId}${sub&&sub!=='All'?'&sub='+encodeURIComponent(sub):''}`);
+  showProductsView(); loadCatView(); buildSidebar(); buildSubTabs();
+};
+
+// ── CAT BANNER ──
+function loadCatView() {
+  const cat = CATEGORIES.find(c=>c.id===activeCat);
+  if (!cat) return;
+  const bg = document.getElementById('cb-bg');
+  if (bg) bg.style.background=`linear-gradient(135deg,${cat.color})`;
+  document.getElementById('cb-title').textContent=cat.label;
+  document.getElementById('cb-sub').textContent=`Browse our ${cat.label.toLowerCase()} selection`;
+  document.getElementById('bc-cur').textContent=cat.label;
+  document.title=cat.label+' — Taj Rice';
+  renderGrid();
+}
+
+// ── SIDEBAR ──
+function buildSidebar() {
+  const sbEl=document.getElementById('sb-cats');
+  if (!sbEl) return;
+  sbEl.innerHTML='';
+  CATEGORIES.forEach(c => {
+    const cnt=(window._fbProds[c.id]||[]).length;
+    const isActive=c.id===activeCat;
+    const catBg=CAT_BG[c.id]||'#F5F5F5';
+    const wrap=document.createElement('div');
+    wrap.className='sb-cat-wrap';
+    const catDiv=document.createElement('div');
+    catDiv.className='sb-cat'+(isActive?' active':'');
+    catDiv.innerHTML=`<div class="sb-left"><span class="sb-ico">${c.icon}</span><span class="sb-name">${c.label}</span></div>
+      <div class="sb-right-row"><span class="sb-cnt">${cnt}</span><span class="sb-arrow">›</span></div>`;
+    catDiv.onclick=()=>selectCat(c.id);
+    wrap.appendChild(catDiv);
+    const inlineSubs=document.createElement('div');
+    inlineSubs.className='sb-inline-subs'+(isActive?' show':'');
+    (SUB_CATS[c.id]||[]).forEach(s=>{
+      const isActiveSub=isActive&&s===activeSub;
+      const item=document.createElement('div');
+      item.className='sb-inline-item'+(isActiveSub?' active':'');
+      item.innerHTML=`${c.icon} ${s}`;
+      item.onclick=(e)=>{e.stopPropagation();activeSub=s;history.replaceState(null,'',`?cat=${c.id}${s!=='All'?'&sub='+encodeURIComponent(s):''}`);buildSidebar();buildSubTabs();renderGrid();};
+      inlineSubs.appendChild(item);
+    });
+    wrap.appendChild(inlineSubs);
+    const flyout=document.createElement('div');
+    flyout.className='sb-flyout';
+    wrap.addEventListener('mouseenter',()=>{
+      const rect=wrap.getBoundingClientRect();
+      flyout.style.top=Math.min(rect.top,window.innerHeight-320)+'px';
+    });
+    flyout.innerHTML=`<div class="sb-flyout-header">${c.icon} ${c.label}</div>
+      <div class="sb-flyout-grid">${(SUB_CATS[c.id]||[]).map(s=>{
+        const isActiveSub=isActive&&s===activeSub;
+        return `<div class="sb-flyout-card${isActiveSub?' active':''}" onclick="event.stopPropagation();selectCat('${c.id}','${s==='All'?'':s}')">
+          <div style="background:${catBg};padding:10px;border-radius:8px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:1.4rem">${c.icon}</div>
+          <div class="sfc-name${isActiveSub?' active-text':''}">${s}</div></div>`;
+      }).join('')}</div>`;
+    wrap.appendChild(flyout);
+    sbEl.appendChild(wrap);
+  });
+}
+
+// ── SUB TABS ──
+function buildSubTabs() {
+  const cat=CATEGORIES.find(c=>c.id===activeCat);
+  if (!cat) return;
+  const bar=document.getElementById('sub-tab-bar');
+  if (!bar) return;
+  bar.innerHTML=(SUB_CATS[cat.id]||[]).map(s=>
+    `<div class="stab${s===activeSub?' active':''}" onclick="setSubTab('${s}')">${s}</div>`
+  ).join('');
+}
+window.setSubTab=function(s){
+  activeSub=s;
+  history.replaceState(null,'',`?cat=${activeCat}${s!=='All'?'&sub='+encodeURIComponent(s):''}`);
+  buildSidebar(); buildSubTabs(); renderGrid();
+};
+
+// ── PRODUCT GRID ──
+let baseProds=[];
+function renderGrid() {
+  baseProds=(window._fbProds[activeCat]||[]).map(p=>({...p,section:activeCat}));
+  applySort();
+}
+window.applySort=function(){
+  const arr=activeSub==='All'?baseProds:baseProds.filter(p=>(p.subCategory||p.cat)===activeSub);
+  const s=document.getElementById('sort-sel')?.value||'default';
+  let sorted=[...arr];
+  if(s==='price-asc')  sorted.sort((a,b)=>(a.sp||a.price||0)-(b.sp||b.price||0));
+  if(s==='price-desc') sorted.sort((a,b)=>(b.sp||b.price||0)-(a.sp||a.price||0));
+  if(s==='name')       sorted.sort((a,b)=>a.name.localeCompare(b.name));
+  const cnt=document.getElementById('prod-count');
+  if(cnt) cnt.textContent=sorted.length;
+  const grid=document.getElementById('prod-grid');
+  if (!grid) return;
+  if(!sorted.length){grid.innerHTML=`<div class="empty-state"><div class="ei">🔍</div><p>No products found.</p></div>`;return;}
+  grid.innerHTML=sorted.map((p,i)=>makeCard(p,activeCat,i)).join('');
+};
+
+// ── SEARCH ──
+function setupSearch() {
+  const sinput=document.getElementById('hdr-sinput');
+  const sdrop=document.getElementById('hdr-search-drop');
+  if (!sinput||!sdrop) return;
+  sinput.oninput=function(){
+    const q=this.value.trim().toLowerCase();
+    if(!q){sdrop.classList.remove('open');sdrop.innerHTML='';return;}
+    const hits=(window._fbAll||[]).filter(p=>p.name.toLowerCase().includes(q)||(p.subCategory||'').toLowerCase().includes(q)).slice(0,8);
+    sdrop.innerHTML=hits.length
+      ?hits.map(p=>`<div class="sd-item" onclick="goProduct('${p.id}','${p.section||p.category}')">
+          <span class="sd-icon">${CAT_ICONS[p.section||p.category]||'📦'}</span>
+          <div><div class="sd-name">${p.name}</div><div class="sd-meta">${p.subCategory||p.category} · ${p.weight||''}</div></div>
+          <span class="sd-price">Rs. ${Number(p.sp||p.price||0).toLocaleString()}</span>
+        </div>`).join('')
+      :`<div class="sd-empty">No results for "<b>${q}</b>"</div>`;
+    sdrop.classList.add('open');
+  };
+  document.addEventListener('click',e=>{if(!document.querySelector('.hdr-search')?.contains(e.target))sdrop.classList.remove('open');});
+}
+
+// ── SKELETON LOADER — shown instantly while Firebase loads ──
+function showLandingSkeleton() {
+  const grid = document.getElementById('cat-landing-grid');
+  if (grid) {
+    grid.innerHTML = Array(9).fill(`
+      <div class="cat-landing-card" style="pointer-events:none">
+        <div class="clc-img" style="background:linear-gradient(90deg,#F0F0F0 25%,#E8E8E8 50%,#F0F0F0 75%);background-size:200% 100%;animation:catSkeleton 1.4s ease infinite"></div>
+        <div class="clc-body">
+          <div style="height:12px;width:70%;background:#EEE;border-radius:4px;margin:0 auto 6px"></div>
+          <div style="height:10px;width:50%;background:#F2F2F2;border-radius:4px;margin:0 auto"></div>
+        </div>
+      </div>`).join('');
+  }
+}
+if (!document.getElementById('cat-skeleton-style')) {
+  const st = document.createElement('style');
+  st.id = 'cat-skeleton-style';
+  st.textContent = '@keyframes catSkeleton{0%{background-position:0% 0}100%{background-position:200% 0}}';
+  document.head.appendChild(st);
+}
+
+// ── INIT ──
+async function init() {
+  showLandingSkeleton();
+  buildHeader('products');
+  // Run both Firebase reads in parallel instead of one-after-another
+  await Promise.all([
+    loadLiveCategories(),
+    loadFromFirebase()
+  ]);
+  setupSearch();
+  if (activeCat) {
+    showProductsView(); loadCatView(); buildSidebar(); buildSubTabs();
+  } else {
+    showLanding();
+  }
+}
+init();
+</script>
+</body>
+</html>
