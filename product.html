@@ -269,77 +269,97 @@
 </a>
 
 <script src="data.js"></script>
-<script>
+<script type="module">
 const params  = new URLSearchParams(window.location.search);
 const prodId  = params.get('id');
 const secId   = params.get('sec') || 'rice';
 let product   = null;
 
-const secProds = (PRODUCTS[secId]||[]);
-product = secProds.find(p=>p.id===prodId) || secProds[0];
+async function init() {
+  await loadLiveCategories();
+  buildHeader('products');
 
-if (product) {
-  const cat = CATEGORIES.find(c=>c.id===secId);
+  // Load products from the same shared Firebase cache used by index.html
+  // and products.html — falls back to static PRODUCTS if Firebase fails.
+  let secProds = [];
+  try {
+    const { byCat } = await loadLiveProducts();
+    secProds = (byCat[secId] || []).map(p => ({ ...p, cat: p.subCategory || p.cat || '' }));
+    if (!secProds.length) throw new Error('empty');
+  } catch (e) {
+    secProds = (PRODUCTS[secId] || []);
+  }
+
+  product = secProds.find(p => p.id === prodId) || secProds[0];
+  if (!product) return;
+
+  const cat = CATEGORIES.find(c => c.id === secId);
 
   // breadcrumb + back
-  document.getElementById('bc-cat').textContent = cat?cat.label:secId;
-  document.getElementById('bc-cat').onclick = ()=>goCategory(secId);
+  document.getElementById('bc-cat').textContent = cat ? cat.label : secId;
+  document.getElementById('bc-cat').onclick = () => goCategory(secId);
   document.getElementById('bc-prod').textContent = product.name;
-  document.getElementById('back-btn').onclick = ()=>goCategory(secId);
-  document.getElementById('related-all').onclick = ()=>goCategory(secId);
+  document.getElementById('back-btn').onclick = () => goCategory(secId);
+  document.getElementById('related-all').onclick = () => goCategory(secId);
   document.title = product.name + ' — Taj Rice';
 
   // image
-  document.getElementById('p-icon').textContent = product.icon;
-  document.getElementById('p-tags').innerHTML = [product.cat, product.badge||'Premium', 'Taj Rice']
-    .map((t,i)=>`<span class="ptag ${i===0?'ptag-gold':'ptag-dark'}">${t}</span>`).join('');
+  document.getElementById('p-icon').textContent = product.icon || '📦';
+  document.getElementById('p-tags').innerHTML = [product.cat, product.badge || 'Premium', 'Taj Rice']
+    .map((t, i) => `<span class="ptag ${i === 0 ? 'ptag-gold' : 'ptag-dark'}">${t}</span>`).join('');
 
   // info
-  document.getElementById('p-brand').textContent = product.cat.toUpperCase();
+  document.getElementById('p-brand').textContent = (product.cat || '').toUpperCase();
   document.getElementById('p-title').textContent = product.name;
   document.getElementById('p-sub').textContent   = product.weight + ' — Premium Quality';
-  document.getElementById('p-price').textContent = 'Rs. ' + product.price.toLocaleString();
+  document.getElementById('p-price').textContent = 'Rs. ' + Number(product.price || product.sp || 0).toLocaleString();
   document.getElementById('p-per').textContent   = 'per ' + product.weight;
-  document.getElementById('p-highlights').innerHTML = (product.highlights||[])
-    .map(h=>`<div class="hl-item"><span class="hl-chk">✓</span><span>${h}</span></div>`).join('');
+  document.getElementById('p-highlights').innerHTML = (product.highlights || [])
+    .map(h => `<div class="hl-item"><span class="hl-chk">✓</span><span>${h}</span></div>`).join('');
 
   updTotal();
 
   document.getElementById('btn-addcart').onclick = () => {
-    const qty = parseInt(document.getElementById('qty').value)||1;
-    Cart.add({...product,section:secId}, qty);
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    Cart.add({ ...product, section: secId }, qty);
     CartDrawer.open();
   };
   document.getElementById('btn-wa').onclick = () => {
-    const qty = parseInt(document.getElementById('qty').value)||1;
-    const total = product.price * qty;
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    const total = (product.price || product.sp || 0) * qty;
     const msg = `Hello, I'd like to order from Taj Rice:\n\n*${product.name}* (${product.weight})\nQuantity: ${qty}\nTotal: Rs. ${total.toLocaleString()}\n\nPayment: Cash on Delivery\nPlease confirm. Thank you!`;
-    window.open(`https://wa.me/923128168702?text=${encodeURIComponent(msg)}`,'_blank');
+    window.open(`https://wa.me/923128168702?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   // related
-  const sameCat = secProds.filter(p=>p.id!==product.id&&p.cat===product.cat);
-  const others  = secProds.filter(p=>p.id!==product.id&&p.cat!==product.cat);
-  const related = [...sameCat,...others].slice(0,6);
-  document.getElementById('related-grid').innerHTML = related.map((p,i)=>{
-    const badge=p.badge?`<div class="pcard-badge ${['Best Seller','Premium','Value Pack'].includes(p.badge)?'gold':''}">${p.badge}</div>`:'';
-    const pj=JSON.stringify({id:p.id,name:p.name,icon:p.icon,weight:p.weight,price:p.price,section:secId}).replace(/"/g,"'");
+  const sameCat = secProds.filter(p => p.id !== product.id && p.cat === product.cat);
+  const others  = secProds.filter(p => p.id !== product.id && p.cat !== product.cat);
+  const related = [...sameCat, ...others].slice(0, 6);
+  document.getElementById('related-grid').innerHTML = related.map((p, i) => {
+    const badge = p.badge ? `<div class="pcard-badge ${['Best Seller','Premium','Value Pack'].includes(p.badge)?'gold':''}">${p.badge}</div>` : '';
+    const price = p.price || p.sp || 0;
+    const imgHtml = p.imageUrl
+      ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;" alt="${p.name}"/>`
+      : (p.icon || '📦');
+    const pj = JSON.stringify({ id: p.id, name: p.name, icon: p.icon, weight: p.weight, price, section: secId }).replace(/"/g, "'");
     return `<div class="pcard" style="animation-delay:${i*.05}s" onclick="goProduct('${p.id}','${secId}')">
-      ${badge}<div class="pcard-img">${p.icon}</div>
+      ${badge}<div class="pcard-img">${imgHtml}</div>
       <div class="pcard-body"><div class="pcard-cat">${p.cat}</div><div class="pcard-name">${p.name}</div><div class="pcard-wt">${p.weight}</div>
-      <div class="pcard-foot"><div class="pcard-price">Rs. ${p.price.toLocaleString()}</div>
+      <div class="pcard-foot"><div class="pcard-price">Rs. ${Number(price).toLocaleString()}</div>
       <button class="pcard-add" onclick="event.stopPropagation();Cart.add(${pj});CartDrawer.open()">+ Add</button></div></div></div>`;
   }).join('');
 }
 
-function updTotal(){
-  if(!product)return;
-  const qty=Math.max(1,parseInt(document.getElementById('qty').value)||1);
-  document.getElementById('total-val').textContent='Rs. '+(product.price*qty).toLocaleString();
+function updTotal() {
+  if (!product) return;
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value) || 1);
+  const price = product.price || product.sp || 0;
+  document.getElementById('total-val').textContent = 'Rs. ' + (price * qty).toLocaleString();
 }
-function chQty(d){const i=document.getElementById('qty');i.value=Math.max(1,(parseInt(i.value)||1)+d);updTotal();}
+function chQty(d) { const i = document.getElementById('qty'); i.value = Math.max(1, (parseInt(i.value) || 1) + d); updTotal(); }
+window.chQty = chQty;
 
-(async () => { await loadLiveCategories(); buildHeader('products'); })();
+init();
 </script>
 </body>
 </html>
