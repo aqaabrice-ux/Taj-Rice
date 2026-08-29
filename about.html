@@ -271,16 +271,31 @@
 
 <script src="data.js"></script>
 <script>
-const cg = document.getElementById('cats-grid');
-CATEGORIES.forEach(c => {
-  const cnt = (PRODUCTS[c.id]||[]).length;
-  const d = document.createElement('div');
-  d.className = 'cat-pill';
-  d.innerHTML = `<span>${c.icon}</span> ${c.label} <span style="margin-left:auto;font-size:.66rem;color:var(--gray4)">${cnt}</span>`;
-  d.onclick = () => goCategory(c.id);
-  cg.appendChild(d);
-});
-(async () => { await loadLiveCategories(); buildHeader('about'); })();
+async function initAboutPage() {
+  await loadLiveCategories();
+  buildHeader('about');
+
+  let counts = {};
+  try {
+    const { byCat } = await loadLiveProducts();
+    Object.keys(byCat).forEach(k => counts[k] = byCat[k].length);
+  } catch (e) {
+    // fall back to static counts if Firebase is unavailable
+    Object.keys(PRODUCTS).forEach(k => counts[k] = (PRODUCTS[k]||[]).length);
+  }
+
+  const cg = document.getElementById('cats-grid');
+  cg.innerHTML = '';
+  CATEGORIES.forEach(c => {
+    const cnt = counts[c.id] ?? 0;
+    const d = document.createElement('div');
+    d.className = 'cat-pill';
+    d.innerHTML = `<span>${c.icon}</span> ${c.label} <span style="margin-left:auto;font-size:.66rem;color:var(--gray4)">${cnt}</span>`;
+    d.onclick = () => goCategory(c.id);
+    cg.appendChild(d);
+  });
+}
+initAboutPage();
 </script>
 </body>
 </html>
