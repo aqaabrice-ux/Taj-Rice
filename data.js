@@ -668,11 +668,16 @@ function buildHeader(activePage) {
     sinput.addEventListener('input', function() {
       const q = this.value.trim().toLowerCase();
       if (!q) { sdrop.classList.remove('open'); sdrop.innerHTML=''; return; }
-      const hits = ALL_PRODUCTS.filter(p =>
-        p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)
+      const pool = (window._fbAll && window._fbAll.length) ? window._fbAll : ALL_PRODUCTS;
+      const hits = pool.filter(p =>
+        p.name.toLowerCase().includes(q) || (p.subCategory || p.cat || '').toLowerCase().includes(q)
       ).slice(0, 7);
       sdrop.innerHTML = hits.length
-        ? hits.map(p=>`<div class="sd-item" onclick="goProduct('${p.id}','${p.section}')"><span class="sd-icon">${p.icon}</span><div><div class="sd-name">${p.name}</div><div class="sd-meta">${p.cat} · ${p.weight}</div></div><span class="sd-price">Rs. ${p.price.toLocaleString()}</span></div>`).join('')
+        ? hits.map(p=>{
+            const price = p.price || p.sp || 0;
+            const sec = p.section || p.category;
+            return `<div class="sd-item" onclick="goProduct('${p.id}','${sec}')"><span class="sd-icon">${p.icon||'📦'}</span><div><div class="sd-name">${p.name}</div><div class="sd-meta">${p.subCategory||p.cat||''} · ${p.weight}</div></div><span class="sd-price">Rs. ${Number(price).toLocaleString()}</span></div>`;
+          }).join('')
         : `<div class="sd-empty">No results for "<b>${q}</b>"</div>`;
       sdrop.classList.add('open');
     });
@@ -778,4 +783,3 @@ function initMobileAnnPopup() {
     }, 6000);
   }
 }
-
