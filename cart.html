@@ -226,8 +226,6 @@
 
 <script src="data.js"></script>
 <script>
-document.getElementById('ann-x').onclick = () => document.getElementById('ann').remove();
-
 function renderCart() {
   const list  = document.getElementById('cart-items-list');
   const wrap  = document.getElementById('cart-table-wrap');
@@ -312,19 +310,25 @@ function checkout() { CheckoutModal.open(); }
 function renderSuggested() {
   const grid = document.getElementById('suggested-grid');
   const cartIds = Cart.items.map(i=>i.id);
-  const suggestions = ALL_PRODUCTS.filter(p=>!cartIds.includes(p.id)).slice(0,6);
+  const pool = (window._fbAll && window._fbAll.length) ? window._fbAll : ALL_PRODUCTS;
+  const suggestions = pool.filter(p=>!cartIds.includes(p.id)).slice(0,6);
   grid.innerHTML = suggestions.map(p => {
     const badge=p.badge?`<div class="pcard-badge ${['Best Seller','Premium','Value Pack'].includes(p.badge)?'gold':''}">${p.badge}</div>`:'';
-    const pj=JSON.stringify({id:p.id,name:p.name,icon:p.icon,weight:p.weight,price:p.price,section:p.section}).replace(/"/g,"'");
-    return `<div class="pcard" onclick="goProduct('${p.id}','${p.section}')">
+    const price = p.price || p.sp || 0;
+    const sec = p.section || p.category;
+    const imgHtml = p.imageUrl
+      ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;" alt="${p.name}"/>`
+      : (p.icon || '📦');
+    const pj=JSON.stringify({id:p.id,name:p.name,icon:p.icon,weight:p.weight,price,section:sec}).replace(/"/g,"'");
+    return `<div class="pcard" onclick="goProduct('${p.id}','${sec}')">
       ${badge}
-      <div class="pcard-img">${p.icon}</div>
+      <div class="pcard-img">${imgHtml}</div>
       <div class="pcard-body">
-        <div class="pcard-cat">${p.cat}</div>
+        <div class="pcard-cat">${p.subCategory || p.cat || ''}</div>
         <div class="pcard-name">${p.name}</div>
         <div class="pcard-wt">${p.weight}</div>
         <div class="pcard-foot">
-          <div class="pcard-price">Rs. ${p.price.toLocaleString()}</div>
+          <div class="pcard-price">Rs. ${Number(price).toLocaleString()}</div>
           <button class="pcard-add" onclick="event.stopPropagation();Cart.add(${pj});renderCart()">+ Add</button>
         </div>
       </div>
@@ -337,14 +341,29 @@ const si=document.getElementById('hdr-sinput'),sd=document.getElementById('hdr-s
 si.addEventListener('input',function(){
   const q=this.value.trim().toLowerCase();
   if(!q){sd.classList.remove('open');sd.innerHTML='';return;}
-  const hits=ALL_PRODUCTS.filter(p=>p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)).slice(0,7);
-  sd.innerHTML=hits.length?hits.map(p=>`<div class="sd-item" onclick="goProduct('${p.id}','${p.section}')"><span class="sd-icon">${p.icon}</span><div><div class="sd-name">${p.name}</div><div class="sd-meta">${p.cat}·${p.weight}</div></div><span class="sd-price">Rs.${p.price.toLocaleString()}</span></div>`).join(''):`<div class="sd-empty">No results</div>`;
+  const pool = (window._fbAll && window._fbAll.length) ? window._fbAll : ALL_PRODUCTS;
+  const hits=pool.filter(p=>p.name.toLowerCase().includes(q)||(p.subCategory||p.cat||'').toLowerCase().includes(q)).slice(0,7);
+  sd.innerHTML=hits.length?hits.map(p=>{
+    const price = p.price || p.sp || 0;
+    const sec = p.section || p.category;
+    return `<div class="sd-item" onclick="goProduct('${p.id}','${sec}')"><span class="sd-icon">${p.icon||'📦'}</span><div><div class="sd-name">${p.name}</div><div class="sd-meta">${p.subCategory||p.cat||''}·${p.weight}</div></div><span class="sd-price">Rs.${Number(price).toLocaleString()}</span></div>`;
+  }).join(''):`<div class="sd-empty">No results</div>`;
   sd.classList.add('open');
 });
 document.addEventListener('click',e=>{if(!document.querySelector('.hdr-search').contains(e.target))sd.classList.remove('open');});
 
 initCheckoutModal();
 renderCart();
+
+// Header (hamburger menu, mobile search toggle, ann popup) + live Firebase data
+(async () => {
+  await loadLiveCategories();
+  buildHeader('cart');
+  try {
+    await loadLiveProducts();
+  } catch (e) { /* falls back to static ALL_PRODUCTS already handled above */ }
+  renderSuggested(); // re-render with live data once it arrives
+})();
 </script>
 </body>
 </html>
