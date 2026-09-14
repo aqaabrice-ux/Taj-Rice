@@ -475,15 +475,23 @@ img { display: block; max-width: 100%; }
 
   .hdr-right { justify-self: end; gap: 4px; }
 
-  /* Search icon toggle (mobile) — same visual treatment as the cart icon */
+  /* Search icon toggle (mobile) — golden outline treatment to match
+     the site's brand palette instead of a flat gray button */
   .mobile-search-toggle {
     display: flex; align-items: center; justify-content: center;
     width: 36px; height: 36px; flex-shrink: 0;
-    border-radius: 50%; background: var(--gray1); border: 1px solid var(--gray2);
-    cursor: pointer; font-size: .92rem; color: var(--dark);
-    transition: background .15s;
+    border-radius: 50%;
+    background: var(--gold-l);
+    border: 1.5px solid var(--gold);
+    cursor: pointer; padding: 0;
+    transition: all .15s;
   }
-  .mobile-search-toggle:active { background: var(--gray2); }
+  .mobile-search-toggle svg { width: 16px; height: 16px; fill: var(--gold-d); }
+  .mobile-search-toggle:active {
+    background: var(--gold);
+    transform: scale(.94);
+  }
+  .mobile-search-toggle:active svg { fill: white; }
 
   /* Search bar becomes a full-width dropdown overlay below the header when toggled open */
   .hdr-search { display: none; }
